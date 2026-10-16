@@ -1,0 +1,532 @@
+{
+  "minimum_stars": 50000,
+  "verified_date": "2026-10-16",
+  "repositories": [
+    {
+      "full_name": "obra/superpowers",
+      "html_url": "https://github.com/obra/superpowers",
+      "stargazers_count": 300257,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-10T03:03:30Z",
+      "description": "An agentic skills framework & software development methodology that works.",
+      "commit_sha": "bb92a77741419a4ab5f06e711a283343f1ada0c3",
+      "observed_at": "2026-10-16T09:09:04.368125+00:00",
+      "source_files": [
+        {
+          "path": "third_party/obra__superpowers/LICENSE",
+          "sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/obra__superpowers/README.upstream.md",
+          "sha256": "9b7be460027bf53c29f628eee72dceeebb83e52dd5e94a1b6f9828a64c579198",
+          "source_path": "README.md"
+        },
+        {
+          "path": "third_party/obra__superpowers/systematic-debugging.md",
+          "sha256": "51c6435d98c83c42c96ba7c35725a0b2c376cd487fb1a4e6bd0ddbe7e33ef202",
+          "source_path": "skills/systematic-debugging/SKILL.md"
+        },
+        {
+          "path": "third_party/obra__superpowers/test-driven-development.md",
+          "sha256": "64b03fce4aee5a97a93160cea8111f3ba13a17b7c001db4bd5836d67fd10705d",
+          "source_path": "skills/test-driven-development/SKILL.md"
+        },
+        {
+          "path": "third_party/obra__superpowers/writing-plans.md",
+          "sha256": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a",
+          "source_path": "skills/writing-plans/SKILL.md"
+        },
+        {
+          "path": "third_party/obra__superpowers/verification-before-completion.md",
+          "sha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3",
+          "source_path": "skills/verification-before-completion/SKILL.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "n8n-io/n8n",
+      "html_url": "https://github.com/n8n-io/n8n",
+      "stargazers_count": 207607,
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "archived": false,
+      "default_branch": "master",
+      "pushed_at": "2026-10-16T09:08:13Z",
+      "description": "Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, self-host or cloud, 400+ integrations.",
+      "commit_sha": "fa88c3e2512fa980b4d5bef2edc8d3d0e5815726",
+      "observed_at": "2026-10-16T09:08:36.917007+00:00",
+      "source_files": [],
+      "source_status": "LINK_ONLY_LICENSE_REVIEW"
+    },
+    {
+      "full_name": "firecrawl/firecrawl",
+      "html_url": "https://github.com/firecrawl/firecrawl",
+      "stargazers_count": 192008,
+      "license": {
+        "key": "agpl-3.0",
+        "name": "GNU Affero General Public License v3.0",
+        "spdx_id": "AGPL-3.0",
+        "url": "https://api.github.com/licenses/agpl-3.0",
+        "node_id": "MDc6TGljZW5zZTE="
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T04:57:31Z",
+      "description": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥",
+      "commit_sha": "386330419c6924cc5d733e59abca9b857241acc4",
+      "observed_at": "2026-10-16T09:08:50.574671+00:00",
+      "source_files": [],
+      "source_status": "LINK_ONLY_LICENSE_REVIEW"
+    },
+    {
+      "full_name": "microsoft/markitdown",
+      "html_url": "https://github.com/microsoft/markitdown",
+      "stargazers_count": 190491,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-04T03:59:52Z",
+      "description": "Python tool for converting files and office documents to Markdown.",
+      "commit_sha": "4cc9fa17653d695d64fb9eee5b33d4de55ff84e8",
+      "observed_at": "2026-10-16T09:08:50.496347+00:00",
+      "source_files": [
+        {
+          "path": "third_party/microsoft__markitdown/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/microsoft__markitdown/README.upstream.md",
+          "sha256": "9f9dc0e582d066e8ac671a1f63b3a73c70a7be9909e8be51a7f5aeb5a7c04af2",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "ollama/ollama",
+      "html_url": "https://github.com/ollama/ollama",
+      "stargazers_count": 183401,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T01:09:43Z",
+      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
+      "commit_sha": "d9b86018cba1d222fd28e28f42e5cdc15a060f39",
+      "observed_at": "2026-10-16T09:08:36.846268+00:00",
+      "source_files": [
+        {
+          "path": "third_party/ollama__ollama/LICENSE",
+          "sha256": "5934ed2ce0d15154bcdb9c85203210abac0da4314af34081e36df4599f90b226",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/ollama__ollama/README.upstream.md",
+          "sha256": "9e5a7d406950fdd2742084065ab38a3ea09b5aab5e2f13ef7d64147229ae0d8b",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "anthropics/skills",
+      "html_url": "https://github.com/anthropics/skills",
+      "stargazers_count": 181469,
+      "license": null,
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-09T18:45:52Z",
+      "description": "Public repository for Agent Skills",
+      "commit_sha": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "observed_at": "2026-10-16T09:09:04.420541+00:00",
+      "source_files": [],
+      "source_status": "LINK_ONLY_LICENSE_REVIEW"
+    },
+    {
+      "full_name": "langgenius/dify",
+      "html_url": "https://github.com/langgenius/dify",
+      "stargazers_count": 158628,
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T09:04:33Z",
+      "description": "Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative workspace. Deploy on cloud, VPC, or self-hosted, so teams move from prototype to production without rebuilding the stack.",
+      "commit_sha": "0d580fddf7df8e6eae0694a45e76d395be467f19",
+      "observed_at": "2026-10-16T09:08:36.890012+00:00",
+      "source_files": [],
+      "source_status": "LINK_ONLY_LICENSE_REVIEW"
+    },
+    {
+      "full_name": "langflow-ai/langflow",
+      "html_url": "https://github.com/langflow-ai/langflow",
+      "stargazers_count": 155737,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T05:57:52Z",
+      "description": "Langflow is a powerful tool for building and deploying AI-powered agents and workflows.",
+      "commit_sha": "972d56c47d3830d17060ee85cfaad152df823041",
+      "observed_at": "2026-10-16T09:08:36.890884+00:00",
+      "source_files": [
+        {
+          "path": "third_party/langflow-ai__langflow/LICENSE",
+          "sha256": "48d4a7496209a9e1f2f549384251b69319360c3a38127cf513473590be383359",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/langflow-ai__langflow/README.upstream.md",
+          "sha256": "2db8b7380f9675c287418f208e5011aa5f64289b1d2001ef43e3c96d03aeca33",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "langchain-ai/langchain",
+      "html_url": "https://github.com/langchain-ai/langchain",
+      "stargazers_count": 147914,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "master",
+      "pushed_at": "2026-10-16T08:38:01Z",
+      "description": "The agent engineering platform.",
+      "commit_sha": "c088db971097f0f12c7b8c30d473e8dbde09c823",
+      "observed_at": "2026-10-16T09:08:36.897543+00:00",
+      "source_files": [
+        {
+          "path": "third_party/langchain-ai__langchain/LICENSE",
+          "sha256": "4ec67e4ca6e6721dba849b2ca82261597c86a61ee214bbf21416006b7b2d0478",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/langchain-ai__langchain/README.upstream.md",
+          "sha256": "9e6d706b38215c6979ef398ba72181b0f9099b8150f317c4c221877456c2dc2e",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "browser-use/browser-use",
+      "html_url": "https://github.com/browser-use/browser-use",
+      "stargazers_count": 118155,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T08:33:02Z",
+      "description": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API.",
+      "commit_sha": "e0a70fbe31c8e9cebcf42648f43e306a1c484421",
+      "observed_at": "2026-10-16T09:08:50.493786+00:00",
+      "source_files": [
+        {
+          "path": "third_party/browser-use__browser-use/LICENSE",
+          "sha256": "135c57671b0ee957669b05a0ca00cc06f645496d351e2e732832c6e276da9a5e",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/browser-use__browser-use/README.upstream.md",
+          "sha256": "fcca30a036d122e34c943740c29d8cb91642f0c615050a8d54ec891c0eee56d2",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "paperclipai/paperclip",
+      "html_url": "https://github.com/paperclipai/paperclip",
+      "stargazers_count": 102928,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "master",
+      "pushed_at": "2026-10-16T08:41:52Z",
+      "description": "The open-source app everyone uses to manage agents at work",
+      "commit_sha": "8f1cb11a034b82e93fa414f8e77beeb702cc14e8",
+      "observed_at": "2026-10-16T09:09:17.143706+00:00",
+      "source_files": [
+        {
+          "path": "third_party/paperclipai__paperclip/LICENSE",
+          "sha256": "7f8a27f0979bded50e240caa8c8c29f3088ddf87032cb83e5a9732bff91d18b4",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/paperclipai__paperclip/README.upstream.md",
+          "sha256": "9896a929b8c598a3049af9d6f31ca11bdc301c2cbb5625f39fa51257c8906fe2",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "microsoft/playwright",
+      "html_url": "https://github.com/microsoft/playwright",
+      "stargazers_count": 97831,
+      "license": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T05:24:05Z",
+      "description": "Playwright is a framework for Web Testing and Automation. It allows testing Chromium, Firefox and WebKit with a single API. ",
+      "commit_sha": "034f230cc68b286055186f4d9783188536f2f3cf",
+      "observed_at": "2026-10-16T09:08:36.828724+00:00",
+      "source_files": [
+        {
+          "path": "third_party/microsoft__playwright/LICENSE",
+          "sha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/microsoft__playwright/README.upstream.md",
+          "sha256": "0a6a9dddcbf1295b61e83462ee7aa130289a4d4e60bac1a0deccd661f8fc8146",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "punkpeye/awesome-mcp-servers",
+      "html_url": "https://github.com/punkpeye/awesome-mcp-servers",
+      "stargazers_count": 96440,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-15T06:32:19Z",
+      "description": "A collection of MCP servers.",
+      "commit_sha": "8a8b37d9a4c1c5e4fda88e6a56ba23d7755f6236",
+      "observed_at": "2026-10-16T09:09:04.104457+00:00",
+      "source_files": [
+        {
+          "path": "third_party/punkpeye__awesome-mcp-servers/LICENSE",
+          "sha256": "8cb2c0a4c6590502ffb793005c0f1b440ca4db34dcc209bbe9cf34d3b52a7e07",
+          "source_path": "LICENSE"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "infiniflow/ragflow",
+      "html_url": "https://github.com/infiniflow/ragflow",
+      "stargazers_count": 92317,
+      "license": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T09:08:35Z",
+      "description": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs",
+      "commit_sha": "26e6acc2174eced23af392b283f4956bda792398",
+      "observed_at": "2026-10-16T09:08:50.613852+00:00",
+      "source_files": [
+        {
+          "path": "third_party/infiniflow__ragflow/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/infiniflow__ragflow/README.upstream.md",
+          "sha256": "fac60858d157e4dd64dbd1ec75355b5815c54bd4d9c6e628b75ee3717d36e196",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "modelcontextprotocol/servers",
+      "html_url": "https://github.com/modelcontextprotocol/servers",
+      "stargazers_count": 91303,
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-13T05:54:47Z",
+      "description": "Model Context Protocol Servers",
+      "commit_sha": "bbb701e7ac1e57f3edd1c2836b94c5457eaf7b9c",
+      "observed_at": "2026-10-16T09:09:04.132765+00:00",
+      "source_files": [],
+      "source_status": "LINK_ONLY_LICENSE_REVIEW"
+    },
+    {
+      "full_name": "unclecode/crawl4ai",
+      "html_url": "https://github.com/unclecode/crawl4ai",
+      "stargazers_count": 85645,
+      "license": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI="
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-15T10:16:13Z",
+      "description": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key.",
+      "commit_sha": "94b67888ca8b335ff2121423a50e06dd27661922",
+      "observed_at": "2026-10-16T09:08:50.543138+00:00",
+      "source_files": [
+        {
+          "path": "third_party/unclecode__crawl4ai/LICENSE",
+          "sha256": "193fe32704bee15cd74f5153e569cdf830e26445e19798a55daee32da40758aa",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/unclecode__crawl4ai/README.upstream.md",
+          "sha256": "55b8a72c8fe34ee3479fef39480116121e760c57c154cf4f64ea41a893e9201a",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "ComposioHQ/awesome-claude-skills",
+      "html_url": "https://github.com/ComposioHQ/awesome-claude-skills",
+      "stargazers_count": 77215,
+      "license": null,
+      "archived": false,
+      "default_branch": "master",
+      "pushed_at": "2026-09-18T07:16:11Z",
+      "description": "A curated list of awesome Claude Skills, resources, and tools for customizing Claude AI workflows",
+      "commit_sha": "be2a406907dbc61b73e6827ded415c96139d13a2",
+      "observed_at": "2026-10-16T09:09:04.047247+00:00",
+      "source_files": [],
+      "source_status": "LINK_ONLY_LICENSE_REVIEW"
+    },
+    {
+      "full_name": "microsoft/autogen",
+      "html_url": "https://github.com/microsoft/autogen",
+      "stargazers_count": 61440,
+      "license": {
+        "key": "cc-by-4.0",
+        "name": "Creative Commons Attribution 4.0 International",
+        "spdx_id": "CC-BY-4.0",
+        "url": "https://api.github.com/licenses/cc-by-4.0",
+        "node_id": "MDc6TGljZW5zZTI1"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-04-15T11:59:09Z",
+      "description": "A programming framework for agentic AI",
+      "commit_sha": "027ecf0a379bcc1d09956d46d12d44a3ad9cee14",
+      "observed_at": "2026-10-16T09:08:50.541888+00:00",
+      "source_files": [
+        {
+          "path": "third_party/microsoft__autogen/LICENSE",
+          "sha256": "7e7170e3cebf88a9f60c7b8421418323c09304da1af4d5e90f4da1dc1c8a2661",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/microsoft__autogen/README.upstream.md",
+          "sha256": "5d300aa3304aeecf1a48f68ac76a1af255b8645d666b8aa154790cb30f1dbb94",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    },
+    {
+      "full_name": "crewAIInc/crewAI",
+      "html_url": "https://github.com/crewAIInc/crewAI",
+      "stargazers_count": 59759,
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "archived": false,
+      "default_branch": "main",
+      "pushed_at": "2026-10-16T03:41:58Z",
+      "description": "Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewAI empowers agents to work together seamlessly, tackling complex tasks.",
+      "commit_sha": "6115839576d68d2e83b9f7f31e6c55d471e1fc64",
+      "observed_at": "2026-10-16T09:09:04.182352+00:00",
+      "source_files": [
+        {
+          "path": "third_party/crewAIInc__crewAI/LICENSE",
+          "sha256": "28868731966f4aa37f02879839aabc797137e27ddde4e274ef9cf965f9a71774",
+          "source_path": "LICENSE"
+        },
+        {
+          "path": "third_party/crewAIInc__crewAI/README.upstream.md",
+          "sha256": "b0f39843f93676b12883d5821a34555e2146e62bd2c42dc12733fc41222de013",
+          "source_path": "README.md"
+        }
+      ],
+      "source_status": "SOURCE_REFERENCES_DOWNLOADED"
+    }
+  ]
+}

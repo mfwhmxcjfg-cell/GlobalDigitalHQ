@@ -7,7 +7,7 @@ from .settings import ROOT
 
 IGNORES={'MANIFEST.sha256'}
 def file_digests():
-    for area in ('gdhq','seed','web','scripts','tests','docs'):
+    for area in ('gdhq','seed','web','scripts','tests','docs','third_party','.github'):
         for p in sorted((ROOT/area).rglob('*')):
             if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc':
                 yield p.relative_to(ROOT).as_posix(),hashlib.sha256(p.read_bytes()).hexdigest()

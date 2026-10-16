@@ -1,0 +1,37 @@
+name: Deploy Global on owner Windows runner
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Global fermé ; saisir DEPLOY_LOCAL pour installer le code sur ce PC'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: gdhq-windows-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY_LOCAL'
+    runs-on: [self-hosted, Windows, gdhq]
+    environment: gdhq-windows
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify checkout and provenance
+        shell: pwsh
+        run: |
+          python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -c "from gdhq.ecosystem import verify_sources; assert not verify_sources(), verify_sources()"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check web/app.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Back up and install local code
+        shell: pwsh
+        run: |
+          python scripts/deploy_windows.py --confirm DEPLOY_LOCAL
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

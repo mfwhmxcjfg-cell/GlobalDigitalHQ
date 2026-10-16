@@ -1,3 +1,7 @@
+# Global Digital HQ — Cockpit 1.4.0
+
+Écosystème GitHub >= 50 000 étoiles, routage métier, adaptateur Ollama local et trois workflows GitHub Actions manuels. Voir [configuration et limites](docs/GITHUB_ECOSYSTEM.md). Installation Windows à distance non effectuée.
+
 # Global Digital HQ — Cockpit 1.3.1
 
 Sources préparées depuis l’archive Cockpit 1.3.1 fournie par le propriétaire le 16 octobre 2026 : base originale extraite et patch appliqué. Le préparateur ZIP n’est plus nécessaire dans ce dépôt.

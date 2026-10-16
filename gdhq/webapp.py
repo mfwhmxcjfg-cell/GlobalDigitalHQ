@@ -47,7 +47,7 @@ class Handler(BaseHTTPRequestHandler):
                 file=ROOT/'web'/route.split('/')[-1]
                 mime='text/javascript; charset=utf-8' if file.suffix=='.js' else 'text/css; charset=utf-8'
                 return self.reply(file.read_bytes(),mime=mime)
-            if route=='/health':return self.reply({'status':'UP','version':'1.3.1','mode':'LOCAL_ONLY'})
+            if route=='/health':return self.reply({'status':'UP','version':'1.4.0','mode':'LOCAL_ONLY'})
             if route.startswith('/preview/'):
                 parts=route.split('/')
                 if len(parts)!=4 or not parts[2].isdigit():return self.error('Chemin refusé',404)
@@ -56,6 +56,9 @@ class Handler(BaseHTTPRequestHandler):
                 csp="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts"
                 return self.reply(read_preview(s.home,int(parts[2]),parts[3]),mime=kind[parts[3]],policy=csp)
             if not self.authorized():return self.error('Jeton propriétaire requis',401)
+            if route=='/api/ecosystem':
+                from .ecosystem import catalog
+                return self.reply(catalog())
             if route=='/api/providers':
                 from .cockpit import providers
                 return self.reply(providers(s))
@@ -99,6 +102,9 @@ class Handler(BaseHTTPRequestHandler):
             if route=='/api/providers':
                 from .cockpit import save_provider
                 return self.reply(save_provider(s,data))
+            if route=='/api/ecosystem/prepare':
+                from .ecosystem import prepare_workflow
+                return self.reply(prepare_workflow(s,int(data.get('project_id',0)),str(data.get('workflow_id',''))))
             if route.startswith('/api/cockpit/'):
                 from .cockpit import mutate
                 return self.reply(mutate(s,route.rsplit('/',1)[-1],data))
@@ -109,14 +115,14 @@ class Handler(BaseHTTPRequestHandler):
                 key=data.get('key');value=data.get('value')
                 if key in ('paused','emergency_stop','privacy_gate') and type(value)!=bool:raise ValueError('Booléen requis')
                 if key=='model' and (not isinstance(value,str) or len(value)>160):raise ValueError('Modèle invalide')
-                if key=='provider' and value not in ('lmstudio','agents_sdk_local'):raise ValueError('Fournisseur distant interdit')
+                if key=='provider' and value not in ('lmstudio','agents_sdk_local','ollama'):raise ValueError('Fournisseur distant interdit')
                 if key=='audit_hours' and value!=2:raise ValueError('Audit fixé à 2 heures')
                 if key=='autonomous_mode' and value!='DRAFT_ONLY':raise ValueError('Mode de sécurité non modifiable')
                 s.db.set_setting(key,value)
                 if key=='provider':
                     from .sdk_provider import AgentsSDKLocal
-                    from .providers import LMStudio
-                    s.provider=AgentsSDKLocal() if value=='agents_sdk_local' else LMStudio()
+                    from .providers import LMStudio,Ollama
+                    s.provider=AgentsSDKLocal() if value=='agents_sdk_local' else Ollama() if value=='ollama' else LMStudio()
                     s.engine.ai=s.provider
                 s.db.event('SETTING',f'{key} modifié')
                 return self.reply({'ok':True})

@@ -16,3 +16,5 @@ backups/
 logs/
 *.log
 .DS_Store
+dist/
+agent-output/

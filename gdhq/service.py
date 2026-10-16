@@ -17,6 +17,9 @@ class Service:
         init(self.db)
         if provider is not None:
             self.provider=provider
+        elif self.db.setting('provider')=='ollama':
+            from .providers import Ollama
+            self.provider=Ollama()
         elif self.db.setting('provider')=='agents_sdk_local':
             from .sdk_provider import AgentsSDKLocal
             self.provider=AgentsSDKLocal()
@@ -37,7 +40,7 @@ class Service:
             self.db.event('RECOVERY','Processus précédent interrompu, reprise manuelle requise',p['id'])
     def dashboard(self):
         db=self.db
-        return {'version':'1.3.1','agents':len(ROLES),'projects':db.one('SELECT count(*) AS n FROM projects')['n'],'tasks':db.one("SELECT count(*) AS n FROM tasks WHERE status='DONE'")['n'],'blocked':db.one("SELECT count(*) AS n FROM tasks WHERE status='BLOCKED'")['n'],'gates':db.one("SELECT count(*) AS n FROM gates WHERE state='AWAITING_OWNER'")['n'],'events':db.all('SELECT * FROM events ORDER BY id DESC LIMIT 20'),'settings':{k:db.setting(k) for k in ('paused','emergency_stop','model','provider','autonomous_mode')},'employees':db.one('SELECT count(*) AS n FROM workforce_tasks')['n'],'employee_drafts':db.one("SELECT count(*) AS n FROM workforce_tasks WHERE status IN ('REVIEWED_DRAFT','NEEDS_OWNER_REVIEW')")['n'],'integrations':{'LM Studio':'NON CERTIFIÉ','MCP':'CATALOGUE','Shopify':'NON CONNECTÉ','Paiement':'INACTIF'}}
+        return {'version':'1.4.0','agents':len(ROLES),'projects':db.one('SELECT count(*) AS n FROM projects')['n'],'tasks':db.one("SELECT count(*) AS n FROM tasks WHERE status='DONE'")['n'],'blocked':db.one("SELECT count(*) AS n FROM tasks WHERE status='BLOCKED'")['n'],'gates':db.one("SELECT count(*) AS n FROM gates WHERE state='AWAITING_OWNER'")['n'],'events':db.all('SELECT * FROM events ORDER BY id DESC LIMIT 20'),'settings':{k:db.setting(k) for k in ('paused','emergency_stop','model','provider','autonomous_mode')},'employees':db.one('SELECT count(*) AS n FROM workforce_tasks')['n'],'employee_drafts':db.one("SELECT count(*) AS n FROM workforce_tasks WHERE status IN ('REVIEWED_DRAFT','NEEDS_OWNER_REVIEW')")['n'],'integrations':{'LM Studio':'NON CERTIFIÉ','MCP':'CATALOGUE','Shopify':'NON CONNECTÉ','Paiement':'INACTIF'}}
     def projects(self):return self.db.all('SELECT * FROM projects ORDER BY id DESC LIMIT 100')
     def project(self,pid):
         p=self.db.one('SELECT * FROM projects WHERE id=?',(pid,))

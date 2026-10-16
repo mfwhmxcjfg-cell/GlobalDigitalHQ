@@ -37,3 +37,18 @@ class LMStudio:
             return content.strip()
         except (KeyError,IndexError,TypeError,ValueError) as exc:
             raise ModelUnavailable('Le modèle ne renvoie pas de texte exploitable.') from exc
+
+class Ollama(LMStudio):
+    """Ollama local OpenAI compatibility. No pull, cloud routing or tool execution."""
+    def __init__(self,url='http://127.0.0.1:11434/v1',timeout=90):
+        super().__init__(url,timeout)
+    def models(self):
+        return [m for m in super().models() if not self._cloud(m)]
+    @staticmethod
+    def _cloud(model):
+        return 'cloud' in model.lower() or '/' in model or '://' in model
+    def chat(self,system,user,model,max_tokens=1100):
+        if not isinstance(model,str) or not model or self._cloud(model):
+            raise ModelUnavailable('Choisir un modèle Ollama local, sans routage cloud.')
+        if model not in self.models():raise ModelUnavailable('Modèle non chargé dans Ollama local.')
+        return super().chat(system,user,model,max_tokens)

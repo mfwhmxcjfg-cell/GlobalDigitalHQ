@@ -1,3 +1,4 @@
+from .ecosystem import context as ecosystem_context
 """Coordinated manager reviews; honest BLOCKED status if local inference is absent."""
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -59,7 +60,7 @@ class Engine:
                 if self.db.setting('emergency_stop'):raise RuntimeError('Arrêt d’urgence.')
                 instructions=('Tu es le responsable métier '+role['name']+'. Tu dois distinguer faits vérifiés, hypothèses et inconnues. '
                   'Aucun paiement, publication, donnée client, navigation externe ou action irréversible. '
-                  'Réponds en français en 150 mots maximum.\n'+skill_text(role)[:1600])
+                  'Réponds en français en 150 mots maximum.\n'+skill_text(role)[:1600]+'\n'+ecosystem_context(role['id']))
                 answer=self.ai.chat(instructions,'Projet: '+p['name']+'\nObjectif: '+p['brief']+'\nDonne ta stratégie et trois risques. ',model,max_tokens=300)
                 self.db.write('INSERT INTO decisions(project_id,agent_id,phase,opinion,verified,created_at) VALUES(?,?,?,?,?,?)',(pid,role['id'],'PROPOSITION',answer,0,utc()))
                 proposals.append(role['name']+': '+answer)

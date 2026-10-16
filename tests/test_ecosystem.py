@@ -1,0 +1,90 @@
+import unittest,tempfile,json,threading,sqlite3
+from pathlib import Path
+from http.server import BaseHTTPRequestHandler,HTTPServer
+from unittest.mock import patch
+from gdhq.ecosystem import catalog,context,prepare_workflow,verify_sources
+from gdhq.providers import Ollama,ModelUnavailable
+from gdhq.service import Service
+from gdhq.roles import INDEX
+from scripts.deploy_windows import deploy
+
+class EcosystemTests(unittest.TestCase):
+ def test_eligible_pinned_sources(self):
+  d=catalog();self.assertEqual(len(d['repositories']),19)
+  for r in d['repositories']:
+   self.assertGreaterEqual(r['stargazers_count'],50000);self.assertFalse(r['archived']);self.assertEqual(len(r['commit_sha']),40)
+  self.assertEqual(verify_sources(),[])
+ def test_every_agent_has_bounded_context(self):
+  for role in INDEX:
+   text=context(role);self.assertIn('DONNÉES INSUFFISANTES',text);self.assertLess(len(text),1200)
+ def test_workflow_preparation_is_idempotent_and_stopped(self):
+  with tempfile.TemporaryDirectory() as t:
+   s=Service(Path(t))
+   try:
+    pid=s.engine.create('App test','Une application locale de gestion des tâches','webapp')
+    self.assertEqual(prepare_workflow(s,pid,'factory')['created_tasks'],4)
+    self.assertEqual(prepare_workflow(s,pid,'factory')['created_tasks'],0)
+    rows=s.db.all('SELECT * FROM cockpit_tasks');self.assertTrue(all(r['status']=='TODO' and r['agent_id'] in INDEX for r in rows))
+    s.db.set_setting('emergency_stop',True)
+    with self.assertRaises(PermissionError):prepare_workflow(s,pid,'operations')
+   finally:s.engine.pool.shutdown()
+ def test_bad_workflow_and_project(self):
+  with tempfile.TemporaryDirectory() as t:
+   s=Service(Path(t))
+   try:
+    with self.assertRaises(ValueError):prepare_workflow(s,999,'factory')
+   finally:s.engine.pool.shutdown()
+ def test_ollama_rejects_remote_and_cloud(self):
+  with self.assertRaises(ValueError):Ollama('https://example.com/v1')
+  for name in ['model:cloud','provider/model','https://model']:
+   with self.assertRaises(ModelUnavailable):Ollama().chat('system','user',name)
+ def test_ollama_protocol(self):
+  seen=[]
+  class Handler(BaseHTTPRequestHandler):
+   def log_message(self,*args):pass
+   def do_GET(self):
+    seen.append(self.path);raw=json.dumps({'data':[{'id':'qwen-local'},{'id':'qwen:cloud'}]}).encode();self.send_response(200);self.end_headers();self.wfile.write(raw)
+   def do_POST(self):
+    seen.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))));self.send_response(200);self.end_headers();self.wfile.write(b'{"choices":[{"message":{"content":"Brouillon local valide"}}]}')
+  server=HTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+  try:
+   with patch('gdhq.providers.local_endpoint',lambda u:u):
+    client=Ollama('http://127.0.0.1:'+str(server.server_port)+'/v1')
+   self.assertEqual(client.models(),['qwen-local']);self.assertEqual(client.chat('sys','usr','qwen-local'),'Brouillon local valide')
+   self.assertEqual(seen[-1]['model'],'qwen-local');self.assertFalse(seen[-1]['stream'])
+  finally:server.shutdown();server.server_close();thread.join()
+ def test_deploy_preserves_database_and_previous_app(self):
+  with tempfile.TemporaryDirectory() as t:
+   home=Path(t)/'install';source=Path(t)/'source';source.mkdir();(source/'README.md').write_text('new');(source/'.env').write_text('private')
+   (home/'app').mkdir(parents=True);(home/'app/README.md').write_text('old');(home/'data').mkdir()
+   with sqlite3.connect(home/'data/agency.sqlite3') as c:c.execute('CREATE TABLE evidence(value TEXT)');c.execute("INSERT INTO evidence VALUES ('keep')")
+   with patch('scripts.deploy_windows.socket.socket') as sock:
+    sock.return_value.__enter__.return_value.connect_ex.return_value=1
+    r=deploy(home,source)
+   self.assertFalse(r['started']);self.assertEqual((home/'app/README.md').read_text(),'new');self.assertFalse((home/'app/.env').exists());self.assertEqual((Path(r['previous_app'])/'README.md').read_text(),'old')
+   with sqlite3.connect(Path(r['database_backup'])/'agency.sqlite3') as c:self.assertEqual(c.execute('SELECT value FROM evidence').fetchone()[0],'keep')
+ def test_deploy_refuses_running_server(self):
+  with tempfile.TemporaryDirectory() as t:
+   with patch('scripts.deploy_windows.socket.socket') as sock:
+    sock.return_value.__enter__.return_value.connect_ex.return_value=0
+    with self.assertRaises(RuntimeError):deploy(Path(t)/'install',Path(t)/'source')
+
+class AgentWorkflowTests(unittest.TestCase):
+ def test_local_draft_contains_result_and_review_marker(self):
+  from scripts.run_agent_workflow import run
+  class Local:
+   def models(self):return ['test-model']
+   def chat(self,*args,**kwargs):return 'Résultat de test local sans aucune preuve commerciale.'
+  with tempfile.TemporaryDirectory() as t:
+   rows=run(Local(),'test-model','qa,qa,security','Vérifier le parcours de création du projet',t)
+   self.assertEqual(len(rows),2)
+   self.assertTrue(all(not r['external_action'] for r in rows))
+   self.assertIn('BROUILLON NON VÉRIFIÉ',(Path(t)/'qa.md').read_text())
+ def test_unknown_agent_and_missing_model_are_rejected(self):
+  from scripts.run_agent_workflow import run
+  class Local:
+   def models(self):return []
+  with tempfile.TemporaryDirectory() as t:
+   for role in ['not-an-agent','qa']:
+    with self.assertRaises(ValueError):run(Local(),'missing',role,'Une demande assez détaillée',t)
+   self.assertEqual(list(Path(t).iterdir()),[])

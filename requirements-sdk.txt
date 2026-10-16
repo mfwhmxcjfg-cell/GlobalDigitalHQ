@@ -1,3 +1,0 @@
-# OPTIONNEL : ne pas installer pour le premier démarrage Windows.
-# Tester la compatibilité de la version installée avec LM Studio avant activation.
-openai-agents>=0.23,<1

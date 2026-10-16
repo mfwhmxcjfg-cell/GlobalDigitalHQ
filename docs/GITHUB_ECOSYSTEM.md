@@ -18,9 +18,9 @@ Toutes les actions sont **manuelles**, sans déclenchement sur push ni pull requ
 
 ## Brancher le PC
 1. Dans ce dépôt GitHub privé : Settings > Actions > Runners > New self-hosted runner. Choisir Windows x64 et suivre exactement les commandes générées par GitHub. Ne partager aucun token.
-2. Exécuter le runner avec le même compte Windows que Global ; ajouter le label **gdhq**. Python 3.11+, Node.js et PowerShell 7 doivent être disponibles pour ce runner. Utiliser un runner à jour compatible avec les actions référencées.
+2. Exécuter le runner avec le même compte Windows que Global ; ajouter le label **gdhq**. Python 3.11+, Node.js (optionnel pour le déploiement) et Windows PowerShell doivent être disponibles pour ce runner. Utiliser un runner à jour compatible avec les actions référencées.
 3. Dans Settings > Environments, créer **gdhq-windows** et, si le plan GitHub le permet, configurer les reviewers obligatoires et limiter à main. Le nom d'environnement seul n'active PAS une approbation. Sur un plan sans protection, conserver le lancement manuel réservé au propriétaire ; ne pas accorder l'accès Actions à des tiers.
-4. Fermer Global, sauvegarder ses données, ouvrir Actions > Deploy Global on owner Windows runner > Run workflow depuis main, saisir DEPLOY_LOCAL. Installation ciblée : `%LOCALAPPDATA%/GlobalDigitalHQ_Next_1_1_Desktop/app`, identique au lanceur Bureau fourni. Le compte du runner détermine LOCALAPPDATA ; choisir le même que celui de Global.
+4. Fermer Global, sauvegarder ses données, ouvrir Actions > Deploy Global on owner Windows runner > Run workflow depuis main, saisir DEPLOY_LOCAL. Installation ciblée : `D:/GlobalDigitalHQ/app`. Utiliser ensuite `D:/GlobalDigitalHQ/LANCER_GLOBAL.cmd` ; il définit les données et fichiers temporaires sur D:. Une ancienne base Bureau est copiée une seule fois si le dossier de données sur D: est vide, avec conservation des données originales. Le compte du runner détermine LOCALAPPDATA ; choisir le même que celui de Global.
 5. Après succès, lancer l'app installée via son LANCER.cmd. Tester /health, le cockpit et un modèle local avant de réactiver le moteur.
 
 Le runner a des droits sur le PC. Aucun workflow de code non approuvé ni de fork ne doit y être déclenché. Aucune instance cloud, aucun déploiement public ou achat de service n'est créé par ces fichiers.

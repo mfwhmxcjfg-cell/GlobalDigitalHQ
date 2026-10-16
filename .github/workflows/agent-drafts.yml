@@ -30,12 +30,15 @@ jobs:
     runs-on: [self-hosted, Windows, gdhq]
     environment: gdhq-windows
     timeout-minutes: 30
+    env:
+      TEMP: ${{ runner.temp }}
+      TMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Run text-only local agents
-        shell: pwsh
+        shell: powershell
         env:
           GDHQ_PROVIDER: ${{ inputs.provider }}
           GDHQ_MODEL: ${{ inputs.model }}

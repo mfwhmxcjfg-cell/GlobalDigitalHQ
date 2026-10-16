@@ -88,3 +88,21 @@ class AgentWorkflowTests(unittest.TestCase):
    for role in ['not-an-agent','qa']:
     with self.assertRaises(ValueError):run(Local(),'missing',role,'Une demande assez détaillée',t)
    self.assertEqual(list(Path(t).iterdir()),[])
+
+class DataMigrationTests(unittest.TestCase):
+ def test_copy_database_and_assets_without_overwriting_original(self):
+  from scripts.deploy_windows import migrate_data
+  with tempfile.TemporaryDirectory() as t:
+   previous=Path(t)/'previous';previous.mkdir();(previous/'note.txt').write_text('keep')
+   with sqlite3.connect(previous/'global.sqlite3') as c:c.execute('CREATE TABLE notes(value TEXT)');c.execute("INSERT INTO notes VALUES ('original')")
+   target=Path(t)/'newdata'
+   self.assertTrue(migrate_data(previous,target));self.assertEqual((target/'note.txt').read_text(),'keep')
+   with sqlite3.connect(target/'global.sqlite3') as c:self.assertEqual(c.execute('SELECT value FROM notes').fetchone()[0],'original')
+   self.assertTrue((previous/'global.sqlite3').exists());self.assertFalse(migrate_data(previous,target))
+ def test_launcher_uses_target_data_and_temp(self):
+  with tempfile.TemporaryDirectory() as t:
+   source=Path(t)/'source';source.mkdir();(source/'README.md').write_text('new');home=Path(t)/'target'
+   with patch('scripts.deploy_windows.socket.socket') as sock:
+    sock.return_value.__enter__.return_value.connect_ex.return_value=1
+    r=deploy(home,source)
+   text=Path(r['launcher']).read_text();self.assertIn('GDHQ_DATA_DIR=%~dp0data',text);self.assertIn('TEMP=%~dp0temp',text)

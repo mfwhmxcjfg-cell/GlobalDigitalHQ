@@ -16,7 +16,7 @@ def snapshot(s):
     for r in ROLES:
         rows=db.all('SELECT status,updated_at FROM tasks WHERE agent_id=? UNION ALL SELECT status,updated_at FROM workforce_tasks WHERE manager_id=? ORDER BY updated_at DESC',(r['id'],r['id']))
         states=[x['status'] for x in rows]
-        agents.append({'id':r['id'],'name':r['name'],'department':r['department'],'status':'RUNNING' if 'RUNNING' in states else 'BLOCKED' if 'BLOCKED' in states else 'QUEUED' if 'QUEUED' in states else 'IDLE','last_activity':rows[0]['updated_at'] if rows else None,'assignments':len(rows)})
+        agents.append({'id':r['id'],'name':r['name'],'department':r['department'],'status':'RUNNING' if any(x in states for x in ('RUNNING','WORKING')) else 'BLOCKED' if 'BLOCKED' in states else 'QUEUED' if 'QUEUED' in states else 'IDLE','last_activity':rows[0]['updated_at'] if rows else None,'assignments':len(rows)})
     return {'observed_at':utc(),'agents':agents,'tasks':tasks,'memory':db.all('SELECT * FROM knowledge ORDER BY id DESC LIMIT 500'),'metrics':db.all('SELECT * FROM metrics ORDER BY id DESC LIMIT 500'),'connectors':[
         {'name':'LM Studio','status':'NOT_TESTED','mode':'Local, test explicite dans Réglages','manual':'Configurer le modèle puis tester le serveur local.'},
         {'name':'Apper.io','status':'NOT_CONNECTED','mode':'Option prévue, adaptateur absent','manual':'Copier le brief dans Apper après accord ; joindre le lien ou le résultat comme preuve de tâche. Aucun build automatique.'},

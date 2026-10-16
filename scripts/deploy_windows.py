@@ -91,7 +91,7 @@ def deploy(home, source=ROOT, previous_data=None):
         if old.exists() and not app.exists():old.rename(app)
         raise
     launcher=home/'LANCER_GLOBAL.cmd'
-    launcher.write_text('@echo off\nsetlocal\ncd /d "%~dp0app"\nset "GDHQ_DATA_DIR=%~dp0data"\nset "TEMP=%~dp0temp"\nset "TMP=%~dp0temp"\nif not exist "%TEMP%" mkdir "%TEMP%"\nset "PYTHONUTF8=1"\npython -m gdhq.cli serve --port 8824\nif errorlevel 1 pause\n',encoding='utf-8')
+    launcher.write_text('@echo off\nsetlocal\ncd /d "%~dp0app"\nset "GDHQ_DATA_DIR=%~dp0data"\nset "TEMP=%~dp0temp"\nset "TMP=%~dp0temp"\nif not exist "%TEMP%" mkdir "%TEMP%"\nset "PYTHONUTF8=1"\nset "PLAYWRIGHT_BROWSERS_PATH=%~dp0browsers"\nif exist "%~dp0venv\\Scripts\\python.exe" (\n  "%~dp0venv\\Scripts\\python.exe" -m gdhq.cli serve --port 8824\n) else (\n  python -m gdhq.cli serve --port 8824\n)\nif errorlevel 1 pause\n',encoding='utf-8')
     state={'data_migrated':migrated,'launcher':str(launcher),'installed_app':str(app),'previous_app':str(old) if old.exists() else None,'database_backup':str(backup) if backup.exists() else None,'started':False,'deployed_at':stamp}
     (home/'last-deployment.json').write_text(json.dumps(state,indent=2))
     return state

@@ -11,6 +11,8 @@ class FakeLocalModel:
     def __init__(self): self.calls=[]
     def chat(self,system,user,model,max_tokens=300):
         self.calls.append((system,user,model))
+        if '"evidence_id":1' in system:return __import__('json').dumps({'verdict':'SUPPORTED','claims':[{'statement':'Observation de test','evidence_id':1,'quote':'Données fictives de test uniquement','kpi':''}],'missing':[],'recommendation':'Recommandation de test'})
+        if '"verdict":"ACCEPT"' in system:return '{"verdict":"ACCEPT","reason":"Revue de test sur un livrable fictif"}'
         return ('Brouillon de travail non certifié. Source requise. '
                 'Aucune vente, facture, réservation ou dépense réelle n’est confirmée. '
                 'Vérifier avec le responsable avant diffusion. ')*2
@@ -22,6 +24,8 @@ class WorkforceTest(TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.model=FakeLocalModel()
         self.s=Service(Path(self.tmp.name),self.model)
+        self.addCleanup(self.s.engine.pool.shutdown,wait=True)
+        self.s.engine.research=lambda *args: {'context':'Données fictives de test uniquement','reports':[],'evidence':[{'id':1,'content':'Données fictives de test uniquement'}]}
     def create(self,kind='services'):
         return self.s.engine.create('Projet entreprise','Préparer les métiers et leurs opérations de façon sûre',kind)
     def prepare_model(self):

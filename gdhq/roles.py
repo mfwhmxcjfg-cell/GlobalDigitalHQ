@@ -26,6 +26,8 @@ def skill_text(role):
     p=ROOT/'seed'/'skills'/role['id'].replace('_','-')/'SKILL.md'
     try:
         if p.is_file() and p.resolve().is_relative_to((ROOT/'seed'/'skills').resolve()):
-            return p.read_text(encoding='utf-8')[:5000]
+            text=p.read_text(encoding='utf-8')
+            if len(text)>8000:raise ValueError('Skill trop long : découper explicitement les méthodes')
+            return text
     except (OSError,ValueError):pass
     return 'Rôle : '+role['id']+' — '+role['name']+'\nMission : '+role['mission']+'\nInterdits : '+', '.join(role.get('must_not',[]))

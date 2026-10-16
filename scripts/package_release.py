@@ -18,5 +18,5 @@ def build(output):
     return {'package':output.name,'files':len(files),'sha256':digest}
 if __name__=='__main__':
     import argparse
-    ap=argparse.ArgumentParser();ap.add_argument('--output',default='dist/GlobalDigitalHQ_1_4_0.zip');a=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('--output',default='dist/GlobalDigitalHQ_1_5_0.zip');a=ap.parse_args()
     print(json.dumps(build(a.output)))

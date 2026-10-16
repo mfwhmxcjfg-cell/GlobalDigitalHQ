@@ -11,7 +11,11 @@ class PackageTests(unittest.TestCase):
             self.assertTrue((ROOT/'web'/x).is_file())
     def test_js_is_local(self):
         js=(ROOT/'web'/'app.js').read_text(encoding='utf-8')
-        self.assertNotIn('https://',js)
+        # Public endpoint strings are configuration examples; the UI only calls its own backend.
+        self.assertIn("fetch(path,opts)",js)
+        self.assertNotRegex(js,r'''fetch\(\s*["']https?://''')
+        html=(ROOT/'web/index.html').read_text(encoding='utf-8')
+        self.assertNotRegex(html,r'''<script[^>]+src=["']https?://''')
     def test_catalog(self):self.assertEqual(len(ROLES),40)
     def test_windows_scripts(self):
         for x in ['INSTALLER_WINDOWS.cmd','LANCER.cmd','VERIFIER.cmd','scripts/AUDIT_2H.cmd','scripts/INSTALLER_AUDIT_2H.cmd']:

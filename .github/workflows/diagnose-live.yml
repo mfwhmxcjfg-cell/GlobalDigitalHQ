@@ -1,0 +1,34 @@
+name: Diagnose live research on owner Windows
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gdhq-windows-diagnostics
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Windows, gdhq]
+    timeout-minutes: 5
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+      - name: Read runtime status without private contents
+        shell: cmd
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+        run: |
+          if exist "D:\GlobalDigitalHQ\venv\Scripts\python.exe" (
+            "D:\GlobalDigitalHQ\venv\Scripts\python.exe" scripts/diagnose_live.py
+          ) else (
+            python scripts/diagnose_live.py
+          )
+          if errorlevel 1 exit /b 1

@@ -15,7 +15,9 @@ class Engine:
     def __init__(self,db,home,provider=None):
         self.db=db;self.home=home;self.ai=provider or LMStudio()
         self.pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix='gdhq')
-        self.guard=threading.Lock();self.active=set()
+        self.guard=threading.Lock();self.active=set();self.pending_resume=set()
+        from .live import discover
+        self.research=discover
     def create(self,name,brief,kind):
         name=name.strip();brief=brief.strip()
         if not 3<=len(name)<=120 or not 10<=len(brief)<=2500:raise ValueError('Nom ou objectif invalide.')
@@ -38,43 +40,68 @@ class Engine:
             self.active.add(pid)
         self.pool.submit(self._run,pid)
         return {'started':True}
+    def resume_after_resource(self,pid):
+        with self.guard:
+            if pid in self.active:
+                self.pending_resume.add(pid)
+                return {'queued':True}
+        return self.begin(pid)
     def _run(self,pid):
         try:
             p=self.db.one('SELECT * FROM projects WHERE id=?',(pid,))
             self.db.write('UPDATE projects SET state=?,updated_at=? WHERE id=?',('RUNNING',utc(),pid))
             self._set(pid,'DISCOVERY','RUNNING')
-            self.db.event('EVIDENCE','Recherche live non connectée : seules des hypothèses seront proposées.',pid)
-            self._set(pid,'DISCOVERY','DONE','Sources externes : NON VERIFIÉES. Aucune donnée de tendance ou vente importée.')
+            from .live import check_running,MissingResource,require_resource,DECISION_SYSTEM,validate_decision
+            check_running(self.db)
+            model=self.db.setting('model')
+            dossier=self.research(self.db,self.home,p,self.ai,model)
+            evidence=dossier['context']
+            ai=self.ai
+            if dossier.get('reports') and dossier['reports'][0].get('connector_id'):
+                from .model_council import RemoteModel
+                cid=dossier['reports'][0]['connector_id']
+                ai=RemoteModel(self.db,pid,self.db.one('SELECT * FROM live_connectors WHERE id=?',(cid,)))
+                model=ai.config['model']
+            if not model:require_resource(self.db,pid,'model','Configurer un modèle local ou un modèle API approuvé')
+            self._set(pid,'DISCOVERY','DONE','Sources collectées et citations contrôlées. Vérité et adéquation commerciale à examiner.\n'+evidence)
             self._set(pid,'STRATEGY','RUNNING')
             selected=team_for(p['kind'])
             # Managers directly accountable for this project's employee tasks vote first.
             managers=[t['manager_id'] for t in self.db.all('SELECT manager_id FROM workforce_tasks WHERE project_id=? ORDER BY id',(pid,))]
             ids=list(dict.fromkeys(['ceo']+managers+['security','qa','compliance']))
             selected=[INDEX[i] for i in ids if i in INDEX][:7]
-            model=self.db.setting('model')
-            if not model:
-                raise ModelUnavailable('Aucun modèle LM Studio sélectionné. Ouvre Moteur & réglages.')
             # Two rounds: managers propose, peer reviewers challenge, CEO consolidates.
             proposals=[]
             for role in selected:
-                if self.db.setting('emergency_stop'):raise RuntimeError('Arrêt d’urgence.')
-                instructions=('Tu es le responsable métier '+role['name']+'. Tu dois distinguer faits vérifiés, hypothèses et inconnues. '
+                check_running(self.db)
+                instructions=(DECISION_SYSTEM+'\nTu es le responsable métier '+role['name']+'. Utilise uniquement les faits cités ; signale ce qui manque. '
                   'Aucun paiement, publication, donnée client, navigation externe ou action irréversible. '
-                  'Réponds en français en 150 mots maximum.\n'+skill_text(role)[:1600]+'\n'+ecosystem_context(role['id']))
-                answer=self.ai.chat(instructions,'Projet: '+p['name']+'\nObjectif: '+p['brief']+'\nDonne ta stratégie et trois risques. ',model,max_tokens=300)
+                  'Réponds en français en 150 mots maximum.\n'+skill_text(role)+'\n'+ecosystem_context(role['id']))
+                answer=ai.chat(instructions,'SOURCES :\n'+evidence+'\nProjet: '+p['name']+'\nObjectif: '+p['brief']+'\nDonne ta stratégie et trois risques. ',model,max_tokens=1000)
+                try:validate_decision(answer,dossier['evidence'],[])
+                except MissingResource:require_resource(self.db,pid,'analysis','Proposition de '+role['name']+' sans preuves suffisantes : compléter les sources ou choisir un modèle apte au JSON')
                 self.db.write('INSERT INTO decisions(project_id,agent_id,phase,opinion,verified,created_at) VALUES(?,?,?,?,?,?)',(pid,role['id'],'PROPOSITION',answer,0,utc()))
                 proposals.append(role['name']+': '+answer)
             reviews=[]
             for review_id in ('qa','security','compliance'):
                 role=INDEX[review_id]
-                answer=self.ai.chat('Tu es '+role['name']+'. Tu remets en question les hypothèses non prouvées. Ne certifie aucune conformité ni résultat non vérifié.','Critique ces propositions et identifie les risques prioritaires :\n'+'\n'.join(proposals)[:12000],model,max_tokens=400)
+                check_running(self.db)
+                answer=ai.chat('Tu es '+role['name']+'. Tu remets en question les hypothèses non prouvées. Ne certifie aucune conformité ni résultat non vérifié.','SOURCES :\n'+evidence+'\nCritique ces propositions et identifie les risques prioritaires :\n'+'\n'.join(proposals)[:12000],model,max_tokens=400)
                 self.db.write('INSERT INTO decisions(project_id,agent_id,phase,opinion,verified,created_at) VALUES(?,?,?,?,?,?)',(pid,role['id'],'REVIEW',answer,0,utc()))
                 reviews.append(answer)
-            summary=self.ai.chat('Tu es CEO. Synthétise les désaccords sans inventer les preuves manquantes. Propose une stratégie testable, pas une validation commerciale.', 'Mission : '+p['brief']+'\nPropositions:\n'+'\n'.join(proposals)[:10000]+'\nContre-expertises:\n'+'\n'.join(reviews)[:6000],model,max_tokens=650)
+            check_running(self.db)
+            summary=ai.chat(DECISION_SYSTEM+' Tu es CEO. Synthétise les désaccords. Une contradiction matérielle impose INSUFFICIENT.', 'SOURCES :\n'+evidence+'\nMission : '+p['brief']+'\nPropositions:\n'+'\n'.join(proposals)[:10000]+'\nContre-expertises:\n'+'\n'.join(reviews)[:6000],model,max_tokens=1400)
+            try:validate_decision(summary,dossier['evidence'],dossier.get('plan',{}).get('required_kpis',[]))
+            except MissingResource:require_resource(self.db,pid,'decision','Synthèse CEO insuffisamment étayée ou contradictoire : compléter les preuves puis valider la reprise')
             self.db.write('INSERT INTO decisions(project_id,agent_id,phase,opinion,verified,created_at) VALUES(?,?,?,?,?,?)',(pid,'ceo','SYNTHESIS',summary,0,utc()))
             self._set(pid,'STRATEGY','DONE',summary)
             self._set(pid,'WORKFORCE','RUNNING')
-            report=workforce_run(self.db,self.home,p,self.ai,model)
+            # A new evidence run must not reuse employee drafts from an older dossier.
+            self.db.write("UPDATE workforce_tasks SET status='QUEUED',updated_at=? WHERE project_id=?",(utc(),pid))
+            report=workforce_run(self.db,self.home,p,ai,model,evidence=evidence)
+            if any(v not in ('REVIEWED_DRAFT','NEEDS_OWNER_REVIEW') for v in report['statuses'].values()):
+                require_resource(self.db,pid,'deliverables','Livrables refusés ou dépendances incomplètes : examiner les revues, corriger les sources/consignes puis valider pour réessayer')
+            check_running(self.db)
             self._set(pid,'WORKFORCE','DONE',str(report)[:12000])
             self._set(pid,'BUILD','RUNNING')
             scaffold(self.db,self.home,p)
@@ -88,15 +115,26 @@ class Engine:
                 require_gate(self.db,pid,action,'Action future nécessitant validation explicite et intégration autorisée.')
             self._set(pid,'GOVERNANCE','DONE','Gates créés, aucune dépense ni publication possible.')
             self.db.write('UPDATE projects SET state=?,updated_at=? WHERE id=?',('AWAITING_OWNER',utc(),pid))
+            self.db.write("UPDATE resource_requests SET status='RESOLVED',updated_at=? WHERE project_id=? AND status='APPROVED'",(utc(),pid))
             self.db.event('COMPLETE','Proposition et prototype terminés ; décisions commerciales en attente.',pid)
         except Exception as e:
+            from .public_http import ConnectorError
             error=str(e)[:500]
             waiting=self.db.one('SELECT instructions FROM tasks WHERE project_id=? AND status=? ORDER BY id LIMIT 1',(pid,'RUNNING'))
             if waiting:self._set(pid,waiting['instructions'],'BLOCKED',error=error)
             self.db.write('UPDATE projects SET state=?,updated_at=? WHERE id=?',('BLOCKED',utc(),pid))
             self.db.event('BLOCKED',error,pid)
+            from .live import MissingResource,require_resource
+            if isinstance(e,(ModelUnavailable,ConnectorError)):
+                try:require_resource(self.db,pid,'model','Moteur IA inaccessible : vérifier le modèle et sa connexion dans Réglages')
+                except MissingResource:pass
         finally:
-            with self.guard:self.active.discard(pid)
+            with self.guard:
+                self.active.discard(pid)
+                resume=pid in self.pending_resume
+                self.pending_resume.discard(pid)
+            if resume and not self.db.setting('paused') and not self.db.setting('emergency_stop'):
+                self.begin(pid)
     def build_demo(self,pid):
         p=self.db.one('SELECT * FROM projects WHERE id=?',(pid,))
         if not p:raise ValueError('Projet absent')

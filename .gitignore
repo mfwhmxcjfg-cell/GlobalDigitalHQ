@@ -18,3 +18,7 @@ logs/
 .DS_Store
 dist/
 agent-output/
+
+*.dpapi
+browsers/
+pip-cache/

@@ -16,13 +16,17 @@ from urllib.error import HTTPError
 
 class FakeProvider:
     def models(self):return ['qwen-test']
-    def chat(self,system,user,model,max_tokens=1100):return 'Proposition locale non vérifiée. Testez le marché avant toute dépense.'
+    def chat(self,system,user,model,max_tokens=1100):
+        if '"evidence_id":1' in system:return __import__('json').dumps({'verdict':'SUPPORTED','claims':[{'statement':'Observation de test','evidence_id':1,'quote':'Données fictives de test uniquement','kpi':''}],'missing':[],'recommendation':'Recommandation de test'})
+        if '"verdict":"ACCEPT"' in system:return json.dumps({'verdict':'ACCEPT','reason':'Livrable de test acceptable'})
+        return 'Proposition locale non vérifiée. Testez le marché avant toute dépense.'
 
 class Tests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.home=Path(self.tmp.name)/'data'
         self.s=Service(self.home,FakeProvider())
+        self.s.engine.research=lambda *args: {'context':'Données fictives de test uniquement','reports':[],'evidence':[{'id':1,'content':'Données fictives de test uniquement'}]}
         # LIFO cleanup: finish workers before removing their Windows SQLite files.
         self.addCleanup(self.s.engine.pool.shutdown, wait=True)
     def project(self):return self.s.engine.create('Boutique test','Construire un prototype de boutique et vérifier le panier.','dropshipping')
@@ -217,6 +221,17 @@ class HTTPTests(unittest.TestCase):
         pid=self.project();self.s.engine.build_demo(pid)
         self.assertEqual(self.request(f'/preview/{pid}/index.html')[0],200)
         self.assertEqual(self.request(f'/preview/{pid}/secret.env')[0],404)
+    def test_http_live_routes_require_owner_and_origin(self):
+        self.assertEqual(self.request('/api/live',token=False)[0],401)
+        self.assertEqual(self.request('/api/live/import',{'connectors':[]},origin=False)[0],403)
+        config={'name':'Test Public','kind':'API_GET','url':'https://example.org/api'}
+        status,body=self.request('/api/live/import',{'connectors':config})
+        self.assertEqual(status,200);cid=json.loads(body)['ids'][0]
+        self.assertEqual(self.request('/api/live/approve',{'ids':[cid],'enabled':True})[0],200)
+        self.assertTrue(json.loads(self.request('/api/live')[1])['connectors'][0]['approved'])
+        pid=self.project()
+        status,_=self.request('/api/live/plan',{'project_id':pid,'connector_ids':[cid],'query':'prix public','min_sources':1})
+        self.assertEqual(status,200)
     def test_http_emergency(self):
         r=self.request('/api/settings',{'key':'emergency_stop','value':True})
         self.assertEqual(r[0],200);self.assertTrue(self.s.db.setting('emergency_stop'))

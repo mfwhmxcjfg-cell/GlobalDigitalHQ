@@ -23,11 +23,11 @@ WORKFLOWS=[
  {'id':'evidence','name':'Recherche et dossier de preuves','roles':['trend_intel','market_analyst','knowledge'],
   'repos':['unclecode/crawl4ai','firecrawl/firecrawl','microsoft/markitdown','infiniflow/ragflow'],
   'steps':['Définir les questions et les sources autorisées','Collecter URL, date, contenu et provenance avec un connecteur validé','Contester les contradictions et la fraîcheur','Bloquer la décision si les preuves manquent'],
-  'status':'PLAN_ONLY_CONNECTORS_REQUIRED'},
+  'status':'LIVE_ADAPTERS_IMPLEMENTED_OWNER_CONFIGURATION_REQUIRED'},
  {'id':'factory','name':'Construction et tests du produit','roles':['product_architect','digital_factory','qa','security'],
   'repos':['obra/superpowers','microsoft/playwright','langflow-ai/langflow'],
   'steps':['Écrire critères d’acceptation et plan borné','Construire une modification isolée','Tester les parcours et les permissions','Préparer revue propriétaire et retour arrière'],
-  'status':'LOCAL_DRAFTS_EXIST_BROWSER_ADAPTER_REQUIRED'},
+  'status':'PUBLIC_BROWSER_READER_AVAILABLE_PRODUCT_BROWSER_TESTS_NOT_CONNECTED'},
  {'id':'operations','name':'Automatisation commerciale contrôlée','roles':['operations','automation_engineer','finance','compliance'],
   'repos':['n8n-io/n8n','modelcontextprotocol/servers','paperclipai/paperclip'],
   'steps':['Définir entrée, permissions et budget','Simuler sur données fictives','Obtenir Owner Gate pour l’action précise','Exécuter une seule fois puis rapprocher le résultat réel'],
@@ -47,9 +47,11 @@ def catalog():
         from .roles import INDEX
         row['roles']=[role for role in INDEX if row['full_name'] in ROLE_REPOS.get(role,['microsoft/markitdown','obra/superpowers'])]
         row['integration_status']='ADAPTER_IMPLEMENTED_NOT_TESTED_ON_OWNER_PC' if row['full_name']=='ollama/ollama' else 'NOT_CONNECTED'
+        if row['full_name']=='microsoft/playwright':row['integration_status']='PUBLIC_READER_IMPLEMENTED_INSTALLATION_REQUIRED'
+        if row['full_name']=='modelcontextprotocol/servers':row['integration_status']='HTTP_READ_ADAPTER_IMPLEMENTED_SERVER_CONFIGURATION_REQUIRED'
         row['permissions']='Aucun droit conféré par ce catalogue'
         rows.append(row)
-    return {**d,'repositories':rows,'workflows':WORKFLOWS,'execution_mode':'LOCAL_DRAFT_ONLY'}
+    return {**d,'repositories':rows,'workflows':WORKFLOWS,'execution_mode':'EVIDENCE_REQUIRED_COMMERCIAL_ACTIONS_DISABLED'}
 
 def context(role_id):
     ids=ROLE_REPOS.get(role_id,['microsoft/markitdown','obra/superpowers'])

@@ -47,7 +47,7 @@ class Handler(BaseHTTPRequestHandler):
                 file=ROOT/'web'/route.split('/')[-1]
                 mime='text/javascript; charset=utf-8' if file.suffix=='.js' else 'text/css; charset=utf-8'
                 return self.reply(file.read_bytes(),mime=mime)
-            if route=='/health':return self.reply({'status':'UP','version':'1.4.0','mode':'LOCAL_ONLY'})
+            if route=='/health':return self.reply({'status':'UP','version':'1.5.0','mode':'LOCAL_CONTROL_LIVE_OPT_IN'})
             if route.startswith('/preview/'):
                 parts=route.split('/')
                 if len(parts)!=4 or not parts[2].isdigit():return self.error('Chemin refusé',404)
@@ -56,6 +56,10 @@ class Handler(BaseHTTPRequestHandler):
                 csp="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts"
                 return self.reply(read_preview(s.home,int(parts[2]),parts[3]),mime=kind[parts[3]],policy=csp)
             if not self.authorized():return self.error('Jeton propriétaire requis',401)
+            if route=='/api/live':
+                from .live import snapshot
+                pid=parse_qs(urlsplit(self.path).query).get('project_id',[''])[0]
+                return self.reply(snapshot(s.db,int(pid) if pid else None))
             if route=='/api/ecosystem':
                 from .ecosystem import catalog
                 return self.reply(catalog())
@@ -73,14 +77,18 @@ class Handler(BaseHTTPRequestHandler):
             if route=='/api/logs':return self.reply(s.db.all('SELECT * FROM events ORDER BY id DESC LIMIT 100'))
             if route=='/api/models':
                 try: models=s.provider.models()
-                except Exception: return self.error('LM Studio indisponible. Charge le modèle et démarre le serveur local 1234.',503)
-                return self.reply({'models':models,'endpoint':'http://127.0.0.1:1234/v1'})
+                except Exception: return self.error('Moteur indisponible. Charger le modèle et démarrer le serveur local sélectionné.',503)
+                return self.reply({'models':models,'endpoint':getattr(s.provider,'url','modèle configuré')})
             if route=='/api/settings':return self.reply({'paused':s.db.setting('paused'),'model':s.db.setting('model'),'emergency_stop':s.db.setting('emergency_stop'),'provider':s.db.setting('provider'),'spend_mode':'DISABLED'})
             if route.startswith('/api/projects/'):
                 parts=route.split('/')
                 if len(parts)==4 and parts[3].isdigit():return self.reply(s.project(int(parts[3])))
                 if len(parts)==5 and parts[3].isdigit() and parts[4]=='source':
                     filename=parse_qs(urlsplit(self.path).query).get('file',[''])[0]
+                    if filename.startswith(('team/','evidence/')):
+                        root=(s.home/'projects'/parts[3]).resolve();path=(root/filename).resolve()
+                        if not path.is_relative_to(root) or path.suffix not in ('.md','.txt') or not path.is_file():raise ValueError('Fichier non autorisé')
+                        return self.reply({'name':filename,'content':path.read_text(encoding='utf-8')[:50000]})
                     return self.reply({'name':filename,'content':read_preview(s.home,int(parts[3]),filename).decode('utf-8')})
             return self.error('Route inconnue',404)
         except FileNotFoundError:return self.error('Aucun prototype généré',404)
@@ -99,6 +107,25 @@ class Handler(BaseHTTPRequestHandler):
         if not isinstance(data,dict):return self.error('Objet JSON attendu',400)
         route=urlsplit(self.path).path;s=self.server.service
         try:
+            if route.startswith('/api/live/'):
+                from . import live
+                action=route.rsplit('/',1)[-1]
+                if action=='import':return self.reply(live.import_connectors(s.db,data.get('connectors')))
+                if action=='approve':return self.reply(live.approve_connectors(s.db,data.get('ids'),data.get('enabled')))
+                if action=='plan':return self.reply(live.save_plan(s.db,int(data.get('project_id',0)),data))
+                if action=='resolve':return self.reply(live.approve_request(s,int(data.get('id',0))))
+                if action=='secret':
+                    from .secret_store import save
+                    return self.reply(save(s.home,data.get('name'),data.get('value')))
+                if action=='collect':
+                    pid=int(data.get('project_id',0));row=s.db.one('SELECT * FROM live_connectors WHERE id=?',(int(data.get('connector_id',0)),))
+                    plan=s.db.one('SELECT config FROM research_plans WHERE project_id=?',(pid,))
+                    if not row or not plan:raise ValueError('Configurer le plan du projet et le connecteur')
+                    config=json.loads(plan['config'])
+                    if row['id'] not in config['connector_ids']:raise ValueError('Source absente du plan de recherche')
+                    result=live.collect_one(s.db,s.home,pid,row,config['query'])
+                    return self.reply({'id':result['id'],'observed_at':result['observed_at'],'url':result['url'],'sha256':result['sha256'],'excerpt':result['content'][:1000]})
+                raise ValueError('Opération live inconnue')
             if route=='/api/providers':
                 from .cockpit import save_provider
                 return self.reply(save_provider(s,data))
@@ -149,6 +176,6 @@ def serve(service,host='127.0.0.1',port=8824):
     if host!='127.0.0.1':raise ValueError('Interdiction de réseau externe')
     with AppServer((host,port),service) as server:
         print(f'Global Digital HQ Next : http://127.0.0.1:{server.server_port}',flush=True)
-        print('100 % local. Aucune publication ni dépense possible.',flush=True)
+        print('Cockpit local. Connecteurs réseau sur autorisation ; opérations commerciales désactivées.',flush=True)
         try:server.serve_forever(poll_interval=0.5)
         except KeyboardInterrupt:pass

@@ -1,3 +1,7 @@
+## Mise à jour 1.5.0 — recherche live
+
+Lire [le guide Recherche live et ressources](docs/LIVE_RESEARCH.md) pour importer les API/MCP, configurer les clés et quotas, installer Playwright sur D: et valider les reprises des agents. Les sources deviennent obligatoires pour le parcours des agents. Aucun connecteur n’est activé par le seul déploiement.
+
 # Global Digital HQ — Cockpit 1.4.0
 
 Écosystème GitHub >= 50 000 étoiles, routage métier, adaptateur Ollama local et trois workflows GitHub Actions manuels. Voir [configuration et limites](docs/GITHUB_ECOSYSTEM.md). Installation Windows à distance non effectuée.

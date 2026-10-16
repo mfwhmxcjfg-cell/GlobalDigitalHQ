@@ -41,6 +41,9 @@ def run_audit(db,home,provider=None):
         issues.append({'level':'HIGH','message':'Manifeste d’intégrité absent'})
     checks['payment_capability']='NOT_IMPLEMENTED'
     checks['deployment_capability']='NOT_IMPLEMENTED'
+    checks['live_connectors_authorized']=db.one('SELECT count(*) AS n FROM live_connectors WHERE approved=1')['n']
+    checks['observed_evidence']=db.one('SELECT count(*) AS n FROM live_evidence')['n']
+    checks['open_resource_requests']=db.one("SELECT count(*) AS n FROM resource_requests WHERE status='OPEN'")['n']
     checks['local_model']='NOT_TESTED'
     if provider:
         try:

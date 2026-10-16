@@ -106,3 +106,13 @@ class DataMigrationTests(unittest.TestCase):
     sock.return_value.__enter__.return_value.connect_ex.return_value=1
     r=deploy(home,source)
    text=Path(r['launcher']).read_text();self.assertIn('GDHQ_DATA_DIR=%~dp0data',text);self.assertIn('TEMP=%~dp0temp',text)
+
+class WorkflowContextRegressionTests(unittest.TestCase):
+ def test_runner_context_is_never_used_in_job_env(self):
+  from gdhq.settings import ROOT
+  for path in (ROOT/'.github/workflows').glob('*.yml'):
+   job_env=False
+   for line in path.read_text().splitlines():
+    if line.startswith('    env:'):job_env=True
+    elif line.strip() and not line.startswith('      '):job_env=False
+    if job_env:self.assertNotIn('runner.',line,str(path))

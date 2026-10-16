@@ -17,14 +17,17 @@ jobs:
     runs-on: [self-hosted, Windows, gdhq]
     environment: gdhq-windows
     timeout-minutes: 15
-    env:
-      TEMP: ${{ runner.temp }}
-      TMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
         with:
           persist-credentials: false
       - name: Verify checkout and provenance
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
         shell: powershell
         run: |
           python -m unittest discover -s tests -v
@@ -36,6 +39,9 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           } else { Write-Host "Node absent : contrôle JS à lancer via Validate and package Global." }
       - name: Back up and install local code
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
         shell: powershell
         run: |
           python scripts/deploy_windows.py --confirm DEPLOY_LOCAL --install-root "D:\GlobalDigitalHQ"

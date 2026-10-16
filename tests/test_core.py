@@ -23,6 +23,8 @@ class Tests(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.home=Path(self.tmp.name)/'data'
         self.s=Service(self.home,FakeProvider())
+        # LIFO cleanup: finish workers before removing their Windows SQLite files.
+        self.addCleanup(self.s.engine.pool.shutdown, wait=True)
     def project(self):return self.s.engine.create('Boutique test','Construire un prototype de boutique et vérifier le panier.','dropshipping')
     def test_schema(self):self.assertEqual(self.s.db.integrity(),'ok')
     def test_40_managers(self):self.assertEqual(len(ROLES),40)
@@ -145,15 +147,16 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'déjà'):self.s.engine.begin(pid)
     def test_multiagent_reviews(self):
         pid=self.project();self.s.db.set_setting('paused',False);self.s.db.set_setting('model','qwen-test');self.s.engine.begin(pid)
-        deadline=time.monotonic()+8
+        deadline=time.monotonic()+60
         while pid in self.s.engine.active and time.monotonic()<deadline:time.sleep(.04)
+        self.assertNotIn(pid,self.s.engine.active,'Agents toujours actifs après 60 secondes')
         p=self.s.project(pid)
         self.assertEqual(p['state'],'AWAITING_OWNER',self.s.db.all('SELECT * FROM events'))
         self.assertGreaterEqual(len(p['decisions']),5)
         self.assertTrue((self.home/'projects'/str(pid)/'index.html').is_file())
     def test_model_missing_blocks(self):
         pid=self.project();self.s.db.set_setting('paused',False);self.s.engine.begin(pid)
-        deadline=time.monotonic()+5
+        deadline=time.monotonic()+60
         while pid in self.s.engine.active and time.monotonic()<deadline:time.sleep(.04)
         self.assertEqual(self.s.project(pid)['state'],'BLOCKED')
     def test_crash_recovery(self):

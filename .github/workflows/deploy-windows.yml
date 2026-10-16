@@ -17,6 +17,8 @@ jobs:
     runs-on: [self-hosted, Windows, gdhq]
     environment: gdhq-windows
     timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         env:
@@ -28,21 +30,24 @@ jobs:
         env:
           TEMP: ${{ runner.temp }}
           TMP: ${{ runner.temp }}
-        shell: powershell
+        shell: cmd
         run: |
           python -m unittest discover -s tests -v
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if errorlevel 1 exit /b 1
           python -c "from gdhq.ecosystem import verify_sources; assert not verify_sources(), verify_sources()"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if (Get-Command node -ErrorAction SilentlyContinue) {
+          if errorlevel 1 exit /b 1
+          where node >nul 2>nul
+          if not errorlevel 1 (
             node --check web/app.js
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          } else { Write-Host "Node absent : contrôle JS à lancer via Validate and package Global." }
+            if errorlevel 1 exit /b 1
+          ) else (
+            echo Node absent: JS validation remains available in Validate and package Global.
+          )
       - name: Back up and install local code
         env:
           TEMP: ${{ runner.temp }}
           TMP: ${{ runner.temp }}
-        shell: powershell
+        shell: cmd
         run: |
           python scripts/deploy_windows.py --confirm DEPLOY_LOCAL --install-root "D:\GlobalDigitalHQ"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if errorlevel 1 exit /b 1

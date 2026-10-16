@@ -30,6 +30,8 @@ jobs:
     runs-on: [self-hosted, Windows, gdhq]
     environment: gdhq-windows
     timeout-minutes: 30
+    env:
+      PYTHONUTF8: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         env:
@@ -38,7 +40,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run text-only local agents
-        shell: powershell
+        shell: cmd
         env:
           TEMP: ${{ runner.temp }}
           TMP: ${{ runner.temp }}
@@ -47,8 +49,8 @@ jobs:
           GDHQ_ROLES: ${{ inputs.roles }}
           GDHQ_BRIEF: ${{ inputs.brief }}
         run: |
-          python scripts/run_agent_workflow.py --provider "$env:GDHQ_PROVIDER" --model "$env:GDHQ_MODEL" --roles "$env:GDHQ_ROLES" --brief "$env:GDHQ_BRIEF"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -c "import os,runpy,sys; sys.argv=['scripts/run_agent_workflow.py']+['--'+k.lower()+'='+os.environ['GDHQ_'+k] for k in ['PROVIDER','MODEL','ROLES','BRIEF']]; runpy.run_path(sys.argv[0],run_name='__main__')"
+          if errorlevel 1 exit /b 1
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         env:
           TEMP: ${{ runner.temp }}

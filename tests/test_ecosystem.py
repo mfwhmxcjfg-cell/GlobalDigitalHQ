@@ -116,3 +116,11 @@ class WorkflowContextRegressionTests(unittest.TestCase):
     if line.startswith('    env:'):job_env=True
     elif line.strip() and not line.startswith('      '):job_env=False
     if job_env:self.assertNotIn('runner.',line,str(path))
+
+class WindowsWorkflowRegressionTests(unittest.TestCase):
+ def test_windows_actions_do_not_require_powershell_scripts(self):
+  from gdhq.settings import ROOT
+  for name in ['deploy-windows.yml','agent-drafts.yml']:
+   text=(ROOT/'.github/workflows'/name).read_text(encoding='utf-8')
+   self.assertNotIn('shell: powershell',text);self.assertNotIn('shell: pwsh',text)
+   self.assertIn('shell: cmd',text);self.assertIn('PYTHONUTF8: "1"',text)

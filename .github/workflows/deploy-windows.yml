@@ -43,6 +43,7 @@ jobs:
           ) else (
             echo Node absent: JS validation remains available in Validate and package Global.
           )
+          exit /b 0
       - name: Back up and install local code
         env:
           TEMP: ${{ runner.temp }}

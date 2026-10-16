@@ -1,5 +1,6 @@
 import unittest,tempfile,json,threading,sqlite3
 from pathlib import Path
+from contextlib import closing
 from http.server import BaseHTTPRequestHandler,HTTPServer
 from unittest.mock import patch
 from gdhq.ecosystem import catalog,context,prepare_workflow,verify_sources
@@ -57,12 +58,12 @@ class EcosystemTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as t:
    home=Path(t)/'install';source=Path(t)/'source';source.mkdir();(source/'README.md').write_text('new');(source/'.env').write_text('private')
    (home/'app').mkdir(parents=True);(home/'app/README.md').write_text('old');(home/'data').mkdir()
-   with sqlite3.connect(home/'data/agency.sqlite3') as c:c.execute('CREATE TABLE evidence(value TEXT)');c.execute("INSERT INTO evidence VALUES ('keep')")
+   with closing(sqlite3.connect(home/'data/agency.sqlite3')) as c, c:c.execute('CREATE TABLE evidence(value TEXT)');c.execute("INSERT INTO evidence VALUES ('keep')")
    with patch('scripts.deploy_windows.socket.socket') as sock:
     sock.return_value.__enter__.return_value.connect_ex.return_value=1
     r=deploy(home,source)
    self.assertFalse(r['started']);self.assertEqual((home/'app/README.md').read_text(),'new');self.assertFalse((home/'app/.env').exists());self.assertEqual((Path(r['previous_app'])/'README.md').read_text(),'old')
-   with sqlite3.connect(Path(r['database_backup'])/'agency.sqlite3') as c:self.assertEqual(c.execute('SELECT value FROM evidence').fetchone()[0],'keep')
+   with closing(sqlite3.connect(Path(r['database_backup'])/'agency.sqlite3')) as c, c:self.assertEqual(c.execute('SELECT value FROM evidence').fetchone()[0],'keep')
  def test_deploy_refuses_running_server(self):
   with tempfile.TemporaryDirectory() as t:
    with patch('scripts.deploy_windows.socket.socket') as sock:
@@ -94,10 +95,10 @@ class DataMigrationTests(unittest.TestCase):
   from scripts.deploy_windows import migrate_data
   with tempfile.TemporaryDirectory() as t:
    previous=Path(t)/'previous';previous.mkdir();(previous/'note.txt').write_text('keep')
-   with sqlite3.connect(previous/'global.sqlite3') as c:c.execute('CREATE TABLE notes(value TEXT)');c.execute("INSERT INTO notes VALUES ('original')")
+   with closing(sqlite3.connect(previous/'global.sqlite3')) as c, c:c.execute('CREATE TABLE notes(value TEXT)');c.execute("INSERT INTO notes VALUES ('original')")
    target=Path(t)/'newdata'
    self.assertTrue(migrate_data(previous,target));self.assertEqual((target/'note.txt').read_text(),'keep')
-   with sqlite3.connect(target/'global.sqlite3') as c:self.assertEqual(c.execute('SELECT value FROM notes').fetchone()[0],'original')
+   with closing(sqlite3.connect(target/'global.sqlite3')) as c, c:self.assertEqual(c.execute('SELECT value FROM notes').fetchone()[0],'original')
    self.assertTrue((previous/'global.sqlite3').exists());self.assertFalse(migrate_data(previous,target))
  def test_launcher_uses_target_data_and_temp(self):
   with tempfile.TemporaryDirectory() as t:
@@ -124,3 +125,24 @@ class WindowsWorkflowRegressionTests(unittest.TestCase):
    text=(ROOT/'.github/workflows'/name).read_text(encoding='utf-8')
    self.assertNotIn('shell: powershell',text);self.assertNotIn('shell: pwsh',text)
    self.assertIn('shell: cmd',text);self.assertIn('PYTHONUTF8: "1"',text)
+
+class BackupHandleTests(unittest.TestCase):
+ def test_connections_closed_on_success_and_failure(self):
+  from scripts.deploy_windows import backup_database
+  from unittest.mock import MagicMock
+  for fail in [False, True]:
+   with self.subTest(fail=fail):
+    src=MagicMock();dst=MagicMock()
+    if fail:src.backup.side_effect=RuntimeError('backup failed')
+    with patch('scripts.deploy_windows.sqlite3.connect',side_effect=[src,dst]):
+     if fail:
+      with self.assertRaises(RuntimeError):backup_database(Path('source.sqlite3'),Path('target.sqlite3'))
+     else:backup_database(Path('source.sqlite3'),Path('target.sqlite3'))
+    src.close.assert_called_once_with();dst.close.assert_called_once_with()
+ def test_source_closed_when_destination_cannot_open(self):
+  from scripts.deploy_windows import backup_database
+  from unittest.mock import MagicMock
+  src=MagicMock()
+  with patch('scripts.deploy_windows.sqlite3.connect',side_effect=[src,OSError('cannot open')]):
+   with self.assertRaises(OSError):backup_database(Path('source.sqlite3'),Path('target.sqlite3'))
+  src.close.assert_called_once_with()

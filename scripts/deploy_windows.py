@@ -1,7 +1,15 @@
 """Manual local deployment for an owner-controlled Windows runner. Never starts a server."""
 from pathlib import Path
+from contextlib import closing
 import os,shutil,socket,sqlite3,datetime,json
 ROOT=Path(__file__).resolve().parent.parent
+
+def backup_database(source, destination):
+    # A sqlite3 connection context commits/rolls back; it does not close handles.
+    with closing(sqlite3.connect(Path(source).resolve().as_uri()+'?mode=ro', uri=True)) as src:
+        with closing(sqlite3.connect(destination)) as dst:
+            src.backup(dst)
+
 
 def migrate_data(previous, destination):
     """Copy existing owner data locally once, preserving the original."""
@@ -13,7 +21,7 @@ def migrate_data(previous, destination):
     try:
         for db in previous.rglob('*.sqlite3'):
             target=stage/db.relative_to(previous);target.parent.mkdir(parents=True,exist_ok=True)
-            with sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True) as src,sqlite3.connect(target) as dst:src.backup(dst)
+            backup_database(db, target)
         if destination.exists():destination.rmdir()
         stage.rename(destination)
     except Exception:
@@ -36,7 +44,7 @@ def deploy(home, source=ROOT, previous_data=None):
     backup=home/'backups'/stamp
     for db in (home/'data').glob('*.sqlite3'):
         backup.mkdir(parents=True,exist_ok=True)
-        with sqlite3.connect(db.as_uri()+'?mode=ro',uri=True) as src,sqlite3.connect(backup/db.name) as dst:src.backup(dst)
+        backup_database(db, backup/db.name)
     shutil.copytree(source,staged,ignore=shutil.ignore_patterns('.git','__pycache__','*.pyc','.env','.env.*','dist','data','backups','logs','.venv','node_modules'))
     try:
         if app.exists():app.rename(old)

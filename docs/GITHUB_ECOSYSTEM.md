@@ -30,3 +30,6 @@ Fermer Global. Conserver le dossier app courant sous un autre nom, puis remettre
 
 ## Licences / alternatives
 n8n, Dify, Firecrawl, MCP servers, Anthropic Skills et la collection Composio restent des références soumises à vérification des termes applicables ; aucun code de ces sources n'est intégré par cette livraison. Les catalogues MCP ne sont pas un serveur universel installé. CrewAI, LangChain, Langflow, AutoGen et Paperclip sont des pistes d'architecture alternatives : le moteur existant n'est pas remplacé simultanément par tous ces frameworks.
+
+### Migration depuis un disque C: plein
+Fermer toutes les instances de Global avant le déploiement. Les bases, leurs WAL et journaux sont copiés vers un dossier temporaire sur D:, sans ouvrir la base originale avec SQLite. Les empreintes sont comparées avant/après et avec les copies ; une modification interrompt la migration. SQLite récupère la copie sur D: puis vérifie son intégrité et celle de la sauvegarde. Les originaux restent en place. Ce contrôle ne remplace pas l’arrêt des processus qui écrivent dans la base. Une base illisible ou invalide bloque la migration : aucune installation vide ne remplace silencieusement les données.

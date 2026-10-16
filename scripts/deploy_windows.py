@@ -1,7 +1,7 @@
 """Manual local deployment for an owner-controlled Windows runner. Never starts a server."""
 from pathlib import Path
 from contextlib import closing
-import os,shutil,socket,sqlite3,datetime,json
+import os,shutil,socket,sqlite3,datetime,json,tempfile,hashlib
 ROOT=Path(__file__).resolve().parent.parent
 
 def backup_database(source, destination):
@@ -11,17 +11,55 @@ def backup_database(source, destination):
             src.backup(dst)
 
 
+def snapshot_database(source, destination):
+    """Offline migration: recover a stable copy on the destination drive only.
+
+    All writers must be stopped. Keep WAL and rollback journal; rebuild SHM on D:.
+    Never use immutable=1, which could hide committed WAL transactions.
+    """
+    source=Path(source);destination=Path(destination)
+    files=[source,Path(str(source)+'-wal'),Path(str(source)+'-journal')]
+    def fingerprints():
+        result={}
+        for path in files:
+            if path.is_symlink():raise ValueError('Lien SQLite refusé')
+            if path.exists():
+                with path.open('rb') as stream:
+                    result[path.name]=hashlib.file_digest(stream,'sha256').hexdigest()
+        return result
+    before=fingerprints()
+    with tempfile.TemporaryDirectory(prefix='sqlite-migrate-',dir=destination.parent) as temp:
+        copied=Path(temp)/source.name
+        for path in files:
+            if path.name in before:shutil.copyfile(path,Path(temp)/path.name)
+        if fingerprints()!=before:
+            raise RuntimeError('Base modifiée pendant la copie : fermer toutes les instances de Global et réessayer')
+        for name,digest in before.items():
+            with (Path(temp)/name).open('rb') as stream:
+                if hashlib.file_digest(stream,'sha256').hexdigest()!=digest:
+                    raise RuntimeError('Copie SQLite incohérente : fermer toutes les instances de Global et réessayer')
+        # Open the writable copy so SQLite can recover journals without touching C:.
+        with closing(sqlite3.connect(copied)) as src:
+            src.execute('PRAGMA temp_store=MEMORY')
+            if src.execute('PRAGMA quick_check').fetchall()!=[('ok',)]:
+                raise RuntimeError('Ancienne base SQLite invalide : migration arrêtée, original conservé')
+            with closing(sqlite3.connect(destination)) as dst:
+                src.backup(dst)
+                if dst.execute('PRAGMA quick_check').fetchall()!=[('ok',)]:
+                    raise RuntimeError('Sauvegarde SQLite invalide : migration arrêtée')
+
+
 def migrate_data(previous, destination):
     """Copy existing owner data locally once, preserving the original."""
     previous=Path(previous);destination=Path(destination)
     if not previous.is_dir() or (destination.exists() and any(destination.iterdir())):return False
     if previous.is_symlink() or any(p.is_symlink() for p in previous.rglob('*')):raise ValueError('Lien dans les données : migration manuelle requise')
     stage=destination.parent/('data-copy-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%f'))
-    shutil.copytree(previous,stage,ignore=shutil.ignore_patterns('*.sqlite3','*.sqlite3-wal','*.sqlite3-shm'))
+    shutil.copytree(previous,stage,ignore=shutil.ignore_patterns('*.sqlite3','*.sqlite3-wal','*.sqlite3-shm','*.sqlite3-journal'))
     try:
         for db in previous.rglob('*.sqlite3'):
             target=stage/db.relative_to(previous);target.parent.mkdir(parents=True,exist_ok=True)
-            backup_database(db, target)
+            snapshot_database(db, target)
         if destination.exists():destination.rmdir()
         stage.rename(destination)
     except Exception:

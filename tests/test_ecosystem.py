@@ -146,3 +146,39 @@ class BackupHandleTests(unittest.TestCase):
   with patch('scripts.deploy_windows.sqlite3.connect',side_effect=[src,OSError('cannot open')]):
    with self.assertRaises(OSError):backup_database(Path('source.sqlite3'),Path('target.sqlite3'))
   src.close.assert_called_once_with()
+
+class OfflineSnapshotTests(unittest.TestCase):
+ def test_wal_transactions_preserved_without_opening_source(self):
+  from scripts.deploy_windows import snapshot_database
+  with tempfile.TemporaryDirectory() as t:
+   source=Path(t)/'original.sqlite3';target=Path(t)/'copy.sqlite3'
+   with closing(sqlite3.connect(source)) as writer:
+    writer.execute('PRAGMA journal_mode=WAL');writer.execute('PRAGMA wal_autocheckpoint=0')
+    writer.execute('CREATE TABLE evidence(value TEXT)');writer.execute("INSERT INTO evidence VALUES ('in WAL')");writer.commit()
+    files=[source,Path(str(source)+'-wal'),Path(str(source)+'-shm')]
+    before={str(p):p.read_bytes() for p in files}
+    original_connect=sqlite3.connect
+    def copied_only(path,*args,**kwargs):
+     self.assertNotEqual(str(path),str(source));self.assertNotIn(source.as_uri(),str(path))
+     return original_connect(path,*args,**kwargs)
+    with patch('scripts.deploy_windows.sqlite3.connect',side_effect=copied_only):snapshot_database(source,target)
+    self.assertEqual(before,{str(p):p.read_bytes() for p in files})
+    with closing(sqlite3.connect(target)) as c:self.assertEqual(c.execute('SELECT value FROM evidence').fetchone()[0],'in WAL')
+ def test_changing_source_is_rejected(self):
+  from scripts.deploy_windows import snapshot_database
+  import shutil
+  with tempfile.TemporaryDirectory() as t:
+   source=Path(t)/'original.sqlite3';source.write_bytes(b'before');target=Path(t)/'copy.sqlite3'
+   copy=shutil.copyfile
+   def change(src,dst):
+    result=copy(src,dst);source.write_bytes(b'after');return result
+   with patch('scripts.deploy_windows.shutil.copyfile',side_effect=change):
+    with self.assertRaisesRegex(RuntimeError,'modifiée'):snapshot_database(source,target)
+   self.assertFalse(target.exists());self.assertEqual(list(Path(t).glob('sqlite-migrate-*')),[])
+ def test_invalid_database_blocks_migration(self):
+  from scripts.deploy_windows import migrate_data
+  with tempfile.TemporaryDirectory() as t:
+   previous=Path(t)/'previous';previous.mkdir();db=previous/'bad.sqlite3';db.write_bytes(b'not a database')
+   target=Path(t)/'data'
+   with self.assertRaises(sqlite3.DatabaseError):migrate_data(previous,target)
+   self.assertFalse(target.exists());self.assertEqual(db.read_bytes(),b'not a database')

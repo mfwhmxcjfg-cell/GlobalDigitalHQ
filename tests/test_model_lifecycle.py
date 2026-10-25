@@ -36,6 +36,8 @@ class ModelLifecycleTests(unittest.TestCase):
 
     def test_finetune_ids_and_exact_matching(self):
         self.assertEqual(model_status(config('ft:gpt-4-0613:org:custom:id'))['status'], 'RETIRED')
+        for model in ('ft:babbage-002:org:custom:id', 'ft:davinci-002:org:custom:id', 'ft:gpt-4.1-nano-2025-04-14:org:custom:id'):
+            self.assertEqual(model_status(config(model))['status'], 'RETIRED')
         self.assertEqual(model_status(config('gpt-image-1-mini'))['status'], 'NOT_LISTED_AVAILABILITY_UNVERIFIED')
 
     def test_import_batch_is_atomic_when_retired_model_is_present(self):

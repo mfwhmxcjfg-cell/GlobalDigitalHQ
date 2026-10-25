@@ -29,7 +29,8 @@ def model_status(config, today=None):
         return result
     # Fine-tuned API IDs use ft:<base>:<organization>:<suffix>:<id>.
     base = model.split(':')[1] if model.startswith('ft:') and ':' in model else model
-    entry = next((x for x in data['retirements'] if base in x['models']), None)
+    candidates = {base, 'ft-' + base} if model.startswith('ft:') else {base}
+    entry = next((x for x in data['retirements'] if candidates.intersection(x['models'])), None)
     if entry is None:
         result['status'] = 'NOT_LISTED_AVAILABILITY_UNVERIFIED'
         return result

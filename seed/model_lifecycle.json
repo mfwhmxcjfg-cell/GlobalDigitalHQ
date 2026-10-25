@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-10-25",
+  "source": "https://developers.openai.com/api/docs/deprecations",
+  "scope": "Official OpenAI API only; partial offline list, no proof of account availability",
+  "retirements": [
+    {"shutdown_date": "2026-10-23", "models": ["gpt-3.5-turbo-0125", "gpt-3.5-turbo", "gpt-3.5-turbo-completions"], "replacements": ["gpt-5.6-terra"]},
+    {"shutdown_date": "2026-10-23", "models": ["gpt-4-0613", "gpt-4", "gpt-4-0613-completions", "gpt-4-completions", "gpt-4-1106-preview", "gpt-4-turbo", "gpt-4-turbo-2024-04-09", "gpt-4-turbo-completions", "gpt-4o-2024-05-13", "o1-2024-12-17", "o1", "o3-mini-2025-01-31", "o3-mini"], "replacements": ["gpt-5.6-sol"]},
+    {"shutdown_date": "2026-10-23", "models": ["gpt-4.1-nano", "gpt-4.1-nano-2025-04-14"], "replacements": ["gpt-5.6-luna"]},
+    {"shutdown_date": "2026-10-23", "models": ["o1-pro", "o1-pro-2025-03-19"], "replacements": ["gpt-5.6-sol (reasoning.mode: pro)"]},
+    {"shutdown_date": "2026-10-23", "models": ["o4-mini", "o4-mini-2025-04-16", "ft-o4-mini-2025-04-16"], "replacements": ["gpt-5.6-terra"]},
+    {"shutdown_date": "2026-10-23", "models": ["gpt-image-1"], "replacements": ["gpt-image-2.5-sunburst", "gpt-image-2.5-flare"]},
+    {"shutdown_date": "2026-10-23", "models": ["ft-gpt-3.5-turbo", "ft-babbage-002", "ft-davinci-002"], "replacements": ["gpt-5.6-terra"]},
+    {"shutdown_date": "2026-10-23", "models": ["ft-gpt-4"], "replacements": ["gpt-5.6-sol"]},
+    {"shutdown_date": "2026-10-23", "models": ["ft-gpt-4.1-nano-2025-04-14"], "replacements": ["gpt-5.6-luna"]}
+  ]
+}

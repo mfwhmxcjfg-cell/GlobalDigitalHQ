@@ -23,5 +23,5 @@ class PackageTests(unittest.TestCase):
     def test_manifest(self):
         manifest=ROOT/'MANIFEST.sha256'
         self.assertTrue(manifest.is_file())
-        names={l.split('  ',1)[1] for l in manifest.read_text(encoding='utf-8').splitlines() if '  ' in l}
-        self.assertEqual(names,{name for name,_ in file_digests()})
+        expected={name:digest for digest,name in (line.split('  ',1) for line in manifest.read_text(encoding='utf-8').splitlines() if '  ' in line)}
+        self.assertEqual(expected,dict(file_digests()))

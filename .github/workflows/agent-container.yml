@@ -1,32 +1,10 @@
-name: Run Agent in Docker
-
+name: "Archived template - agent-container"
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
-
+permissions: {}
 jobs:
-  docker-agent:
+  archived:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image
-        run: |
-          docker build -t globaldigital-agent:latest .
-
-      - name: Run container
-        env:
-          AGENT_API_KEY: ${{ secrets.AGENT_API_KEY }}
-          AGENT_MODE: ${{ vars.AGENT_MODE || 'demo' }}
-          AGENT_LOG_LEVEL: ${{ vars.AGENT_LOG_LEVEL || 'INFO' }}
-        run: |
-          docker run --rm \
-            -e AGENT_API_KEY="${AGENT_API_KEY}" \
-            -e AGENT_MODE="${AGENT_MODE}" \
-            -e AGENT_LOG_LEVEL="${AGENT_LOG_LEVEL}" \
-            globaldigital-agent:latest
+      - run: echo "Template preserved in docs/quarantined-workflows; not configured for GDHQ."

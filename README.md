@@ -1,3 +1,7 @@
+## Fiabilité et modèles — 25 octobre 2026
+
+Inventaire en lecture seule des modèles, blocage des références OpenAI retirées avant appel, statut explicite dans le cockpit et neutralisation des workflows génériques non configurés. [État réel, tests, limites et rollback](docs/RELIABILITY_2026-10-25.md). Ce code ne prouve pas un déploiement ou une connexion effective sur Windows.
+
 ## Mise à jour 1.5.0 — recherche live
 
 Lire [le guide Recherche live et ressources](docs/LIVE_RESEARCH.md) pour importer les API/MCP, configurer les clés et quotas, installer Playwright sur D: et valider les reprises des agents. Les sources deviennent obligatoires pour le parcours des agents. Aucun connecteur n’est activé par le seul déploiement.

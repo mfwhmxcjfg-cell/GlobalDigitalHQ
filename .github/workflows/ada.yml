@@ -1,24 +1,10 @@
-name: Ada (GNAT)
-
+name: "Archived template - ada"
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
+  workflow_dispatch:
+permissions: {}
 jobs:
-  build:
-
+  archived:
+    if: ${{ false }}
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Set up GNAT toolchain
-      run: >
-        sudo apt-get update &&
-        sudo apt-get install gnat gprbuild
-
-    - name: Build
-      run: gprbuild -j0 -p
+      - run: echo "Template preserved in docs/quarantined-workflows; not configured for GDHQ."

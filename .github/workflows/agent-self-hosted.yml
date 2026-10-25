@@ -1,31 +1,10 @@
-name: Run Agent on Self-Hosted Runner
-
+name: "Archived template - agent-self-hosted"
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
-
+permissions: {}
 jobs:
-  agent:
-    runs-on: [self-hosted, linux, x64, agent]
+  archived:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run agent
-        env:
-          AGENT_API_KEY: ${{ secrets.AGENT_API_KEY }}
-          AGENT_MODE: ${{ vars.AGENT_MODE || 'demo' }}
-          AGENT_LOG_LEVEL: ${{ vars.AGENT_LOG_LEVEL || 'INFO' }}
-        run: |
-          python -u agents/run_task.py
+      - run: echo "Template preserved in docs/quarantined-workflows; not configured for GDHQ."

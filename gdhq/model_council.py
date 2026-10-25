@@ -7,7 +7,11 @@ from .database import utc,dumps
 class RemoteModel:
     def __init__(self,db,pid,row):self.db=db;self.pid=pid;self.row=row;self.config=json.loads(row['config'])
     def chat(self,system,user,model=None,max_tokens=1100):
-        c=self.config;check_running(self.db);cid=reserve(self.db,self.row,self.pid)
+        c=self.config;check_running(self.db)
+        from .model_lifecycle import ensure_model_available
+        try:ensure_model_available(c)
+        except ValueError as exc:raise ConnectorError(str(exc)) from None
+        cid=reserve(self.db,self.row,self.pid)
         try:
             headers=auth(c)
             if c['protocol']=='anthropic':

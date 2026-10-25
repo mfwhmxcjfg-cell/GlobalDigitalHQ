@@ -64,6 +64,8 @@ def clean_config(item):
         if c['protocol'] not in ('openai','anthropic'):raise ValueError('Protocole modèle inconnu')
         if c['max_cost_usd']<=0:raise ValueError('Modèle distant/routeur : plafond de coût par appel explicite requis')
         if u.query:raise ValueError('URL du modèle sans paramètres requise')
+        from .model_lifecycle import ensure_model_available
+        ensure_model_available(c)
     c.setdefault('metrics',[])
     if not isinstance(c['metrics'],list) or len(c['metrics'])>12:raise ValueError('Mapping KPI invalide')
     for m in c['metrics']:
@@ -99,6 +101,8 @@ def connector_rows(db):
     for r in rows:
         r['config']=json.loads(r['config']);env=r['config']['secret_env']
         r['credential_status']='PRESENT_IN_PROCESS' if env and os.environ.get(env) else 'MISSING' if env else 'NOT_REQUIRED'
+        from .model_lifecycle import model_status
+        r['model_lifecycle']=model_status(r['config'])
     return rows
 
 
@@ -107,6 +111,10 @@ def approve_connectors(db,ids,enabled):
     with db.lock,db.connect() as con:
         for cid in ids:
             if type(cid)!=int or not con.execute('SELECT id FROM live_connectors WHERE id=?',(cid,)).fetchone():raise ValueError('Connecteur absent')
+            if enabled:
+                from .model_lifecycle import ensure_model_available
+                config=json.loads(con.execute('SELECT config FROM live_connectors WHERE id=?',(cid,)).fetchone()['config'])
+                ensure_model_available(config)
         for cid in ids:con.execute('UPDATE live_connectors SET approved=? WHERE id=?',(int(enabled),cid))
     db.event('CONNECTOR_APPROVAL',('Autorisation' if enabled else 'Révocation')+' des connecteurs '+','.join(map(str,ids)))
     return {'approved':enabled,'ids':ids}

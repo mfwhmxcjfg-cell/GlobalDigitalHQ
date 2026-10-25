@@ -32,7 +32,7 @@ Ils ne peuvent plus installer, déployer ou injecter des clés automatiquement l
 Les restaurer nécessite d'abord une configuration correspondant réellement au projet.
 
 Les workflows utiles gardent leur authentification checkout éphémère, `persist-credentials: false` et leurs actions épinglées.
-La validation manuelle inclut désormais un job Windows hébergé (dont DPAPI) et Linux.
+La validation sur pull request ou lancement manuel inclut désormais un job Windows hébergé (dont DPAPI) et Linux ; aucun runner du propriétaire ni secret fournisseur n'est utilisé par cette validation.
 Le déploiement Windows reste manuel, limité à main, `DEPLOY_LOCAL`, environnement `gdhq-windows`, application fermée.
 Son inventaire préalable montre les connecteurs retirés sans réécrire les paramètres ; un code 1 signale un modèle retiré, un code 2 un audit impossible.
 Le diagnostic Windows inclut le même inventaire en lecture seule.

@@ -1,10 +1,12 @@
 name: Validate and package Global
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
-  group: validate-global
+  group: validate-global-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   windows:

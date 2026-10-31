@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS evidence_decisions(id INTEGER PRIMARY KEY,project_id 
 
 
 def clean_config(item):
-    allowed={'name','kind','url','secret_env','auth_header','auth_prefix','tool','arguments','model','protocol','daily_calls','max_cost_usd','daily_budget_usd','local','read_only','purpose','follow_links','results_path','url_field','output_limit_field','metrics'}
+    allowed={'name','kind','url','secret_env','auth_header','auth_prefix','tool','arguments','model','protocol','daily_calls','max_cost_usd','daily_budget_usd','local','read_only','purpose','follow_links','results_path','url_field','output_limit_field','metrics','browser_fixture'}
     if not isinstance(item,dict) or set(item)-allowed:raise ValueError('Champs inconnus ; utiliser le schéma GDHQ, sans clés API en clair')
     c=dict(item);kind=c.get('kind');url=str(c.get('url','')).strip()
     name=str(c.get('name','')).strip()
@@ -39,9 +39,10 @@ def clean_config(item):
     if any(re.search(r'key|token|secret|password|signature',k,re.I) for k,_ in parse_qsl(u.query)):
         raise ValueError('Clé dans URL interdite ; utiliser secret_env et un en-tête')
     if '{' in url.replace('{query}','') or '}' in url.replace('{query}',''):raise ValueError('Seul le paramètre {query} est reconnu')
-    c.setdefault('secret_env','');c.setdefault('auth_header','Authorization');c.setdefault('auth_prefix','Bearer ')
+    gemini=kind=='MODEL' and c.get('protocol')=='gemini_interactions'
+    c.setdefault('secret_env','');c.setdefault('auth_header','x-goog-api-key' if gemini else 'Authorization');c.setdefault('auth_prefix','' if gemini else 'Bearer ')
     if c['secret_env'] and not re.fullmatch(r'[A-Z][A-Z0-9_]{2,79}',c['secret_env']):raise ValueError('secret_env doit être un nom de variable, jamais une clé')
-    if c['auth_header'].lower() not in ('authorization','x-api-key','x-subscription-token'):raise ValueError('En-tête de clé non pris en charge')
+    if c['auth_header'].lower() not in ('authorization','x-api-key','x-subscription-token','x-goog-api-key'):raise ValueError('En-tête de clé non pris en charge')
     if c['auth_prefix'] not in ('Bearer ',''):raise ValueError('Préfixe de clé invalide')
     if kind in ('WEB','PLAYWRIGHT') and c['secret_env']:raise ValueError('Lecture de pages publiques sans authentification uniquement')
     c.setdefault('daily_calls',20)
@@ -61,11 +62,18 @@ def clean_config(item):
         c.setdefault('protocol','openai')
         c.setdefault('output_limit_field','max_tokens')
         if c['output_limit_field'] not in ('max_tokens','max_completion_tokens'):raise ValueError('Champ de limite de sortie invalide')
-        if c['protocol'] not in ('openai','anthropic'):raise ValueError('Protocole modèle inconnu')
+        if c['protocol'] not in ('openai','anthropic','gemini_interactions'):raise ValueError('Protocole modèle inconnu')
+        if gemini:
+            if url!='https://generativelanguage.googleapis.com/v1/interactions' or c['local']:
+                raise ValueError('Gemini Interactions exige le point de terminaison officiel v1')
+            if not c['secret_env'] or c['auth_header'].lower()!='x-goog-api-key' or c['auth_prefix']!='':
+                raise ValueError('Gemini exige une clé par variable et en-tête x-goog-api-key')
         if c['max_cost_usd']<=0:raise ValueError('Modèle distant/routeur : plafond de coût par appel explicite requis')
         if u.query:raise ValueError('URL du modèle sans paramètres requise')
         from .model_lifecycle import ensure_model_available
         ensure_model_available(c)
+    if 'browser_fixture' in c and (not gemini or type(c['browser_fixture']) is not bool):
+        raise ValueError('browser_fixture est un booléen réservé à Gemini Interactions')
     c.setdefault('metrics',[])
     if not isinstance(c['metrics'],list) or len(c['metrics'])>12:raise ValueError('Mapping KPI invalide')
     for m in c['metrics']:

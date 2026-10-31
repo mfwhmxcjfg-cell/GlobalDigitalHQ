@@ -24,6 +24,15 @@ def model_status(config, today=None):
     if config.get('local') and host in ('127.0.0.1', '::1', 'localhost'):
         result['status'] = 'LOCAL_OR_ROUTER_UNVERIFIED'
         return result
+    for entry in data.get('mode_retirements', []):
+        if (host == entry['host'] and config.get('protocol') == entry['protocol']
+                and model in entry['models']
+                and config.get(entry['parameter']) == entry['value']):
+            result.update(status='MODE_RETIRED' if (today or date.today()).isoformat() >= entry['shutdown_date']
+                          else 'MODE_DEPRECATED', shutdown_date=entry['shutdown_date'],
+                          source=entry['source'], checked_at=entry['verified_at'],
+                          parameter=entry['parameter'], value=entry['value'])
+            return result
     if host != 'api.openai.com' or config.get('protocol', 'openai') != 'openai':
         result['status'] = 'PROVIDER_UNVERIFIED'
         return result
@@ -44,4 +53,7 @@ def ensure_model_available(config):
     if status['status'] == 'RETIRED':
         raise ValueError('Modèle OpenAI retiré le ' + status['shutdown_date'] +
                          ' : choisir et évaluer un remplacement explicite. Aucun appel effectué.')
+    if status['status'] == 'MODE_RETIRED':
+        raise ValueError('Mode fournisseur retiré le ' + status['shutdown_date'] +
+                         ' : réviser la configuration explicitement. Aucun appel effectué.')
     return status

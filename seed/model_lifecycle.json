@@ -3,6 +3,18 @@
   "verified_at": "2026-10-25",
   "source": "https://developers.openai.com/api/docs/deprecations",
   "scope": "Official OpenAI API only; partial offline list, no proof of account availability",
+  "mode_retirements": [
+    {
+      "host": "api.anthropic.com",
+      "protocol": "anthropic",
+      "models": ["claude-opus-4-8"],
+      "parameter": "speed",
+      "value": "fast",
+      "shutdown_date": "2026-11-30",
+      "verified_at": "2026-10-31",
+      "source": "https://platform.claude.com/docs/en/release-notes/overview"
+    }
+  ],
   "retirements": [
     {"shutdown_date": "2026-10-23", "models": ["gpt-3.5-turbo-0125", "gpt-3.5-turbo", "gpt-3.5-turbo-completions"], "replacements": ["gpt-5.6-terra"]},
     {"shutdown_date": "2026-10-23", "models": ["gpt-4-0613", "gpt-4", "gpt-4-0613-completions", "gpt-4-completions", "gpt-4-1106-preview", "gpt-4-turbo", "gpt-4-turbo-2024-04-09", "gpt-4-turbo-completions", "gpt-4o-2024-05-13", "o1-2024-12-17", "o1", "o3-mini-2025-01-31", "o3-mini"], "replacements": ["gpt-5.6-sol"]},

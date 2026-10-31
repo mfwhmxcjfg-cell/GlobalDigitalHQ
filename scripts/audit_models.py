@@ -73,7 +73,8 @@ def main(argv=None):
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if report['database'] not in ('NOT_SUPPLIED', 'READ_ONLY_OK'):
         return 2
-    return int(bool(report['repository']) or any(x['approved'] and x['lifecycle']['status']=='RETIRED' for x in report['runtime']))
+    return int(bool(report['repository']) or any(x['approved'] and x['lifecycle']['status'] in
+               ('RETIRED', 'MODE_RETIRED', 'MODE_DEPRECATED') for x in report['runtime']))
 
 
 if __name__ == '__main__':

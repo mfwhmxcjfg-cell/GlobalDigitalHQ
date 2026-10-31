@@ -8,6 +8,9 @@ class RemoteModel:
     def __init__(self,db,pid,row):self.db=db;self.pid=pid;self.row=row;self.config=json.loads(row['config'])
     def chat(self,system,user,model=None,max_tokens=1100):
         c=self.config;check_running(self.db)
+        if c['protocol']=='gemini_interactions':
+            from .gemini import interact, text_result
+            return text_result(interact(self.db,self.pid,self.row,system,user,max_tokens=max_tokens),c)
         from .model_lifecycle import ensure_model_available
         try:ensure_model_available(c)
         except ValueError as exc:raise ConnectorError(str(exc)) from None

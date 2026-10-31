@@ -9,6 +9,28 @@ concurrency:
   group: validate-global-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  browser-trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned browser harness on disposable hosted runner
+        run: |
+          python3 -m pip install playwright==1.64.0
+          python3 -m playwright install --with-deps chromium --only-shell
+      - name: Execute ten synthetic offline browser trials and refusal checks
+        run: |
+          python3 scripts/trial_computer_use.py --run-offline-fixture > browser-trial-report.json
+          python3 -c "import json; r=json.load(open('browser-trial-report.json')); assert r['status']=='HARNESS_VERIFIED_MODEL_NOT_TESTED'; assert r['completed_browser_replays']==10; assert r['model_called'] is False; print(json.dumps(r))"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: offline-browser-trial
+          path: browser-trial-report.json
+          retention-days: 7
+          if-no-files-found: ignore
   windows:
     runs-on: windows-latest
     timeout-minutes: 15
